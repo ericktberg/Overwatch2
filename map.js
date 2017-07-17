@@ -4,11 +4,11 @@
  * 
  * 
  * Facts:
- *   - There is a default map always selected.
- *   - Only one map may be selected at a time.
- *   - Map data relates directly to the map image.
- *   - Maps redraw on parameter changes.
- *   - Map display style can be changed responsively.
+ *   + There is a default map always selected.
+ *   + Only one map may be selected at a time.
+ *   + Map data relates directly to the map image.
+ *   + Maps redraw on parameter changes.
+ *   + Map display style can be changed responsively.
  *   - Map data shares zoom with the background image.
  *   
  * Global Variables:
@@ -55,7 +55,7 @@ function drawEnvironment(root) {
     var svg;
     var container;
     var map = maps_d[map_];
-    
+   
     var zoom = d3.zoom()
             .scaleExtent([.5, 5])
             .on("zoom", function() { container.attr("transform", d3.event.transform); });
@@ -74,6 +74,15 @@ function drawEnvironment(root) {
     // Map selection
     // Elim/Death button
     // User to analyze
+    $.ajax({
+        method: 'POST',
+        url: 'queryEngine.php',
+        data: {number: 1}
+    })
+    .done(function(data) {
+        
+        drawPoints(container, JSON.parse(data));
+    });
     drawMap(container, map);
 }
 
@@ -112,4 +121,26 @@ function setActiveMap(new_map) {
 // A slider controls zoom levels
 function zoomSlider() {
     
+}
+
+function elevateX(x, z) {
+    if (isOdd(z)) { // -1 and 1 are on left
+        return x;
+    }
+    else { // 0 and 2 are on the right
+        return x + maps_d[map_].width;
+    }
+}
+
+function elevateY(y, z) {
+    if (z <= 0) { // -1 and 0 are on top
+        return y;
+    }
+    else { // 1 and 2 are on bottom
+        return y + maps_d[map_].width;
+    }
+}
+
+function isOdd(n) {
+    return n % 2;
 }
