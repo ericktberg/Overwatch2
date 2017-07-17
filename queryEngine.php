@@ -1,10 +1,10 @@
-<!-- PHP file that handles queries
- - Possibly split into two at some point (or use functions?) to handle graph and map differences
- - Takes parameters from UI of website and queries database, returning json structured
- -
--->
-
 <?php
+/* PHP file that handles queries
+ * Possibly split into two at some point (or use functions?) to handle graph and map differences
+ * Takes parameters from UI of website and queries database, returning json structured
+ *
+ */
+
 $servername = "localhost";
 $username = "root";
 $password = "monkeybrains";

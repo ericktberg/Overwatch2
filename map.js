@@ -80,7 +80,7 @@ function drawEnvironment(root) {
         data: {number: 1}
     })
     .done(function(data) {
-        
+        console.log(data);
         drawPoints(container, JSON.parse(data));
     });
     drawMap(container, map);
