@@ -15,14 +15,23 @@ and open the template in the editor.
         <script type="text/javascript" src="map.js"></script>
         <script type="text/javascript" src="point.js"></script>
         <script type="text/javascript" src="index.js"></script>
+        <script type="text/javascript" src="input.js"></script>
+
         <link rel="stylesheet" href="index.css">
+        <link rel="stylesheet" href="topBar.css">
     </head>
     <body>
-        <div id="topBar">
+        <div id="topBar" class="open">
+            
             <!--Maps, graphs, and user buttons here-->
+            <button id="mapsButton" class="active open" onclick="toggleSideBar()">Maps</button>
+            <button id="graphsButton" class="open" onclick="">Graphs</button>
         </div>
         <div id="vizContent">
             <!--Visualization content goes here-->
+        </div>
+        <div id="sideBar" class="open">
+            <!--Sliding sidebar with extra information-->
         </div>
     </body>
 </html>

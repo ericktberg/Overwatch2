@@ -10,6 +10,8 @@
 
 /* global d3 */
 
+var INFO = true;
+
 // When window loads, display default 
 window.onload = function () {
     drawEnvironment(d3.select("#vizContent"));
@@ -24,4 +26,12 @@ function mapButton() {
 // Graph button
 function graphButton() {
     
+}
+
+// A sidebar pops out for use in some visualizations.
+// TopBar buttons are effected by sidebar positioning
+function toggleSideBar() {
+    $('#mapsButton').toggleClass("open");
+    $('#graphsButton').toggleClass("open");
+    $('#sideBar').toggleClass("open");
 }

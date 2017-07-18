@@ -62,7 +62,7 @@ function drawEnvironment(root) {
     
     svg = root.append("svg")
             .attr("width", "100%")
-            .attr("height", "980")
+            .attr("height", "100%")
             .call(zoom);
     
     container = svg.append("g").attr("class", "container");
@@ -74,15 +74,28 @@ function drawEnvironment(root) {
     // Map selection
     // Elim/Death button
     // User to analyze
-    $.ajax({
+    
+    // Determine which data visualization to call
+    if (false /*Hexagon*/) {
+    
+    }
+    else if (false /*Point*/) {
+        $.ajax({
         method: 'POST',
         url: 'queryEngine.php',
         data: {number: 1}
-    })
-    .done(function(data) {
-        console.log(data);
-        drawPoints(container, JSON.parse(data));
-    });
+        })
+        .done(function(data) {
+            drawPoints(container, JSON.parse(data));
+        });
+    }
+    else if (true /*input*/) {
+        initInput(container);
+    }
+    else /*default*/ {
+        
+    }
+    
     drawMap(container, map);
 }
 
