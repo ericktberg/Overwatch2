@@ -31,6 +31,8 @@
  *          
  * Display of previously input data is similar to point type display
  * 
+ * !!! There is a lot of nested 'click' functionality in this system. Beware. Keep scope in mind. !!!
+ * 
  ******************************************************************************/
 
 /* 
@@ -46,12 +48,11 @@ function initInput(container) {
     
     // Populate sidebar +
     
-    /* When a user clicks on the map, create an svg element at location
-     * 
-     * @returns {undefined}
+    /* A user clicks on the map
+     *      1. create an svg element at location
+     *      2. Open a mandatory dialog box to select hero
      */
     var clicked = function() {
-        
         var mouse = d3.event,
             transform = container.attr("transform"), 
             transformX = mouse.layerX,
@@ -61,6 +62,8 @@ function initInput(container) {
         
         var lastCircle,
             lastRect;
+    
+        var hero;
         
         if (transform) {
             transform = getTransformation(transform);
@@ -73,20 +76,72 @@ function initInput(container) {
             console.log("[INFO] " + "transformX: " + transformX + " transformY: " + transformY);
         }
         
-        // Create a cirlce or Rectangle depending on the current state of the pair
-        container.append("circle")
-                .attr("r", 7.5)
-                .attr("transform", "translate(" + transformX + "," + transformY + ")");
+        /* Create a modal to force user to fill out dialog
+         *      - Moving cursor off the modal will turn the modal transparent to view beneath. +
+         *      - The only way to close the modal is by accepting or denying it 
+         *      
+         * Modal interaction options:
+         *      1. If the user enters valid values, and accepts them, populate the svg
+         *      2. If the user does not enter valid values and accepts, point out errors: keep modal open +
+         *      3. If the user cancels the modal, do not populate the svg.
+         */
+        $('#modals').css({display: 'block'});
+        $('#inputModal').css({display: 'block'});
         
-        container.append("rect")
-                .attr("height", function(d) { return 10; })
-                .attr("width", function(d) { return 10; })
-                .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
+        $('#inputModal').find('.ok').unbind('click').click(function() {
+            $('#modals').css({display: 'none'});
+            $('#inputModal').css({display: 'none'});
+            
+            hero = $('#heroSelect').find(":selected").text();
+            console.log(hero);
+            /* Determine what the next click will produce based on the previous shape created and validated
+             * 
+             * Each shape created will be both clickable and hoverable +
+             * 
+             * On click: 
+             *      - Re-open the modal and allow values to be changed. +
+             *      - Show the matching pair +
+             * On Hover: 
+            */
+            if (typeof clicked.lastClick === 'undefined' || clicked.lastClick === 'rect') {
+                clicked.lastClick = 'circle';
+                container.append("circle")
+                        .attr("r", 7.5)
+                        .attr("transform", "translate(" + transformX + "," + transformY + ")")
+                        .on("contextmenu", function (d, i) {
+                            d3.event.preventDefault();                            
+                });
+            }
+            else if (clicked.lastClick === 'circle') {
+                clicked.lastClick = 'rect';
+                container.append("rect")    
+                        .attr("height", function(d) { return 10; })
+                        .attr("width", function(d) { return 10; })
+                        .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");   
+            }
+        });    
+        
+        $('#inputModal').find('.cancel').unbind('click').click(function() {
+            $('#modals').css({display: 'none'});
+            $('#inputModal').css({display: 'none'});
+        });
     };
     
     container.on("click", clicked);
-}
+};
 
+/* Determines what the next click will produce based on
+ *      1. The previous shape created
+ *      2. Whether the previous set has been confirmed
+ *      3. Whether the previous shape had all data provided ? 
+ * 
+ * @returns {String}
+ */
+var nextClick = function(container) { 
+    
+    
+
+};
 
 /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
  * 

@@ -40,7 +40,7 @@ div#topBar {
 div#sideBar {
     z-index: 4;
     top: 5%;
-    height: 50%;
+    height: 95%;
     width: 400px;
     left: -410px;
     transition: all .3s ease-in-out;
