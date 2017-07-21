@@ -112,12 +112,13 @@ function initInput(container) {
         $('#modals').css({display: 'block'});
         $('#inputModal').css({display: 'block'});
         
-        $('#inputModal').find('.ok').unbind('click').click(function() {
+        $('#inputModal').find('.menu').unbind('click').click(function() {
             $('#modals').css({display: 'none'});
             $('#inputModal').css({display: 'none'});
             
-            hero = $('#heroSelect').find(":selected").text();
+            hero = $('#heroSelect').find(".selected").attr("name");
             console.log(hero);
+            $('#heroSelect').find(".selected").removeClass("selected");
             /* Determine what the next click will produce based on the previous shape created and validated
              * 
              * Each shape created will be both clickable and hoverable +
@@ -133,7 +134,7 @@ function initInput(container) {
                         .attr("r", 7.5)
                         .attr("transform", "translate(" + transformX + "," + transformY + ")")
                         .attr("class", hero)
-                        .on("contextmenu", function (d, i) {
+                        .on("contextmenu", function () {
                             d3.event.preventDefault();                            
                 });
             }
@@ -144,7 +145,7 @@ function initInput(container) {
                         .attr("width", function(d) { return 10; })
                         .attr("class", hero)
                         .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")")
-                        .on("contextmenu", function (d, i) {
+                        .on("contextmenu", function () {
                             d3.event.preventDefault();                            
                 });   
             }
@@ -157,19 +158,6 @@ function initInput(container) {
     };
     
     container.on("click", clicked);
-};
-
-/* Determines what the next click will produce based on
- *      1. The previous shape created
- *      2. Whether the previous set has been confirmed
- *      3. Whether the previous shape had all data provided ? 
- * 
- * @returns {String}
- */
-var nextClick = function(container) { 
-    
-    
-
 };
 
 /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
