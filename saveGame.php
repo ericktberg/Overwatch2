@@ -41,6 +41,7 @@ if (mysqli_query($con, $sql)) {
  *      - Return the gameID ?
  * 
  *  TODO: prepared statement
+ *  TODO: Auto-increment does not run on failure, ignore is likely the cause
  */
 $date = filter_input(INPUT_POST, "date");
 $playerSR = filter_input(INPUT_POST, "playerSR");

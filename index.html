@@ -25,12 +25,7 @@ and open the template in the editor.
     </head>
     <body>
         <div id="modals">
-            <div id="inputModal" class="modal">
-                <select id="heroSelect">
-                </select></br>
-                <span class="ok">OK</span></br>
-                <span class="cancel">CANCEL</span>
-            </div>
+            
         </div>
         <div id="topBar" class="open">
             
@@ -45,9 +40,9 @@ and open the template in the editor.
             <form id="gameSave">      
                 Player: <input type="text" name="player" style="width:95%">
                 Date: <input id="datepicker" type="text" name="date" style="width:95%">
-                Player SR: <input type="text" name="playerSR" style="width:95%">
-                Team SR: <input type="text" name="teamSR" style="width:95%">
-                Enemy Team SR: <input type="text" name="enemySR" style="width:95%">
+                Player SR: <input type="number" name="playerSR" min="1" max="5000" style="width:95%">
+                Team SR: <input type="number" name="teamSR" min="1" max="5000" style="width:95%">
+                Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000" style="width:95%">
                 Video Url: <input type="text" name="videoURL" style="width:95%">
                 <input type="submit" name="Submit">
             </form>

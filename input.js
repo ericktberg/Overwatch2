@@ -33,6 +33,30 @@
  * 
  * !!! There is a lot of nested 'click' functionality in this system. Beware. Keep scope in mind. !!!
  * 
+ * Usage steps:
+ * 
+ *  0. Fill out player and game data, send a request, and have it complete/form is filled properly
+ * 
+ *  1.  Click on canvas. Character selection for player comes up (radial menu centered on click)
+ *          Selecting a character closes the menu and colors the new element created at click location
+ *          Clicking outside the menu or hitting esc will cancel the creation of the element
+ *      
+ *  2a. Click on canvas again. Character selection for enemy comes up, identical to player except maybe coloration and title
+ *  
+ *  2b. Right clicking the created elements allows user to reselect the character
+ *          ? + clicking the element allows user to drag the element somewhere else on the canvas
+ *          Holding ? in addition to the rest will allow the user to scrub the canvas
+ *          
+ *  3. Once the second element is created, a menu appears in the center of the screen.
+ *          The menu displays the two previously selected characters
+ *          Other relevant factors are also available for selection. Any that rely on others, are greyed out until the requisites are fulfilled
+ *          Moving focus outside of this menu turns it very transparent and allows interaction with map and elements below.
+ *              ? If element is created in center of canvas, what should the workflow be to move it?
+ *              
+ *  3a. Once the menu has been filled well enough, the user can accept the value and hit accept. This saves it to database.
+ *          Up to a defined amount, iterations of database save are kept and can be reverted. Undoing will delete elements on map
+ *          Hitting cancel will delete both previously created elements. Toggleable warning for this available
+ * 
  ******************************************************************************/
 
 /* 
