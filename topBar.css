@@ -38,6 +38,7 @@ div#topBar {
 }
 
 div#sideBar {
+    position: fixed;
     padding: 10px 10px 10px 10px;
     z-index: 4;
     top: 5%;

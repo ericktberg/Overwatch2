@@ -8,21 +8,21 @@ and open the template in the editor.
     Author     : Erick
 */
 
-div {
-    position: fixed;
-}
 
 #topBar {
+    position: fixed;
     z-index: 3;
 }
 
 #vizContent {
+    position: fixed;
     z-index:2;
     height: 100%;
     width: 100%;
 }
 
 #modals {
+    position: fixed;
     display: none;
     
     z-index: 4;

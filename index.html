@@ -11,13 +11,15 @@ and open the template in the editor.
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
         <script type="text/javascript" src="https://d3js.org/topojson.v1.min.js"></script>
-        <script type="text/javascript" src="jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
         <script type="text/javascript" src="map.js"></script>
         <script type="text/javascript" src="point.js"></script>
         <script type="text/javascript" src="index.js"></script>
         <script type="text/javascript" src="input.js"></script>
 
         <link rel="stylesheet" href="heroes.css">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="topBar.css">
     </head>
@@ -42,6 +44,7 @@ and open the template in the editor.
         <div id="sideBar" class="open">
             <form id="gameSave">      
                 Player: <input type="text" name="player" style="width:95%">
+                Date: <input id="datepicker" type="text" name="date" style="width:95%">
                 Player SR: <input type="text" name="playerSR" style="width:95%">
                 Team SR: <input type="text" name="teamSR" style="width:95%">
                 Enemy Team SR: <input type="text" name="enemySR" style="width:95%">

@@ -5,17 +5,59 @@
  *
  */
 
-$player = filter_input(INPUT_POST, "player");
 
 $servername = "localhost";
 $username = "root";
 $password = "monkeybrains";
 
+$con = new mysqli($servername, $username, $password);
 
-/* Save player information */
+if ($con->connect_error) {
+    die("Connection failed: " . $con->connect_error);
+}
+/* Save player information 
+ * 
+ *      - If player exists, check to update their max SR +
+ *      - else create player +
+ * 
+ *  TODO: prepared statement
+ */
+$playerName = filter_input(INPUT_POST, "player");
 
+$sql = " INSERT IGNORE INTO overwatch.player\n"
+        . " SET playerName='" . $playerName . "',\n"
+        . " pro=0;\n";
 
-/* Save game information */
+if (mysqli_query($con, $sql)) {
+    echo "[success]:\n" . $sql . "\n";
+} else {
+    echo "[Error]: " . $sql . "<br>" . mysqli_error($con) . "\n";
+}
 
-echo $player;
+/* Save game information 
+ *
+ *      - Check for game information and deliver message if it exists +
+ *      - Create the game otherwise +
+ *      - Return the gameID ?
+ * 
+ *  TODO: prepared statement
+ */
+$date = filter_input(INPUT_POST, "date");
+$playerSR = filter_input(INPUT_POST, "playerSR");
+$teamSR = filter_input(INPUT_POST, "teamSR");
+$enemySR = filter_input(INPUT_POST, "enemySR");
+
+$sql = " INSERT IGNORE INTO overwatch.game\n"
+        . " SET player='" . $playerName . "',\n"
+        . " date=STR_TO_DATE('" . $date . "', '%m/%d/%Y'),\n"
+        . " playerElo='" . $playerSR . "',\n"
+        . " teamElo='" . $teamSR . "',\n"
+        . " enemyTeamElo='" . $enemySR . "';\n";
+
+if (mysqli_query($con, $sql)) {
+    echo "[success]:\n" . $sql . "\n";
+} else {
+    echo "[Error]: " . $sql . "<br>" . mysqli_error($con) . "\n";
+}
+
 ?>

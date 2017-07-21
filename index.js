@@ -13,19 +13,23 @@
 var INFO = true;
 
 
-
-// When window loads, display default 
-window.onload = function () {
+/*  When window loads, display default content
+ *  Set behaviors and fill-in data for DOM elements
+ *      TODO: DOM elements that are not being referenced can be filled in when they become relevant
+ * 
+ * @type type
+ */
+$(document).ready(function () {
     drawEnvironment(d3.select("#vizContent"));
     
+    $("#datepicker").datepicker();
+    
+    /**************** TAG: not a global element **************/
     $.each(characters, function() {
         $("#heroSelect").append($("<option />").val(this.name).text(this.name));
     });
     
-    /* Game form default behavior
-     * 
-     */
-
+    /**************** TAG: not a global element **************/
     $("#gameSave").submit(function(e) {
         var url = "saveGame.php";
         
@@ -33,13 +37,13 @@ window.onload = function () {
             type: "POST",
             url: url,
             data: $(this).serialize(),
-        }).done(function(data) { 
-            console.log(data); 
+        }).done(function(response) { 
+            console.log(response); 
         });
         
         e.preventDefault();
     });
-};
+});
 
 
 
