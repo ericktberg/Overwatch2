@@ -12,6 +12,8 @@
 
 var INFO = true;
 
+
+
 // When window loads, display default 
 window.onload = function () {
     drawEnvironment(d3.select("#vizContent"));
@@ -19,7 +21,27 @@ window.onload = function () {
     $.each(characters, function() {
         $("#heroSelect").append($("<option />").val(this.name).text(this.name));
     });
+    
+    /* Game form default behavior
+     * 
+     */
+
+    $("#gameSave").submit(function(e) {
+        var url = "saveGame.php";
+        
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: $(this).serialize(),
+        }).done(function(data) { 
+            console.log(data); 
+        });
+        
+        e.preventDefault();
+    });
 };
+
+
 
 // Maps button
 // On hover, display 

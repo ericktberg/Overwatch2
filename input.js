@@ -108,6 +108,7 @@ function initInput(container) {
                 container.append("circle")
                         .attr("r", 7.5)
                         .attr("transform", "translate(" + transformX + "," + transformY + ")")
+                        .attr("class", hero)
                         .on("contextmenu", function (d, i) {
                             d3.event.preventDefault();                            
                 });
@@ -117,7 +118,11 @@ function initInput(container) {
                 container.append("rect")    
                         .attr("height", function(d) { return 10; })
                         .attr("width", function(d) { return 10; })
-                        .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");   
+                        .attr("class", hero)
+                        .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")")
+                        .on("contextmenu", function (d, i) {
+                            d3.event.preventDefault();                            
+                });   
             }
         });    
         

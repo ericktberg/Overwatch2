@@ -1,0 +1,134 @@
+/*
+    This css stores the color information for heroes used in visualizations
+
+    Example: The circle and squares used in the PointMap simulation use these colors;
+*/
+/* 
+    Created on : Jul 20, 2017, 5:57:01 PM
+    Author     : Erick
+*/
+
+.Genji {
+    fill: #B6EF13;
+    stroke: black;
+}
+
+.McCree {
+    fill: #c23f46;
+    stroke: #795c42;
+}
+
+.Pharah {
+    fill: #1f73c3;
+    stroke: #494949;
+}
+
+.Reaper {
+    fill: #333333;
+    stroke: #d9cca9;
+}
+
+.Soldier {
+    fill: #525d9b;
+    stroke: #d53231;
+}
+
+.Sombra {
+    fill: #30353b;
+    stroke: #f76aff;
+}
+
+.Tracer {
+    fill: #fccf35;
+    stroke: #ce532a;
+}
+
+.Bastion {
+    fill: #e1d5a2;
+    stroke: #63824d;
+}
+
+.Hanzo {
+    fill: #837c46;
+    stroke: #343128;
+}
+
+.Junkrat {
+    fill: #837c19;
+    stroke: #c7712a;
+}
+
+.Mei {
+    fill: #dad5c2;
+    stroke: #56adf0;
+}
+
+.Torbjorn {
+    fill: #de584c;
+    stroke: #e9d282;
+}
+
+.Widowmaker {
+    fill: #bc47bc;
+    stroke: #515489;
+}
+
+.D\.va {
+    fill: #f04cb7;
+    stroke: #07443b;
+}
+
+.Orisa {
+    fill: tan;
+    stroke: limegreen;
+}
+
+.Reinhardt {
+    fill: #b9b5ad;
+    stroke: #5d5956;
+}
+
+.Roadhog {
+    fill: #5f5c59;
+    stroke: #dac39f;
+}
+
+.Winston {
+    fill: #e1dfd8;
+    stroke: #464540;
+}
+
+.Zarya {
+    fill: #ff73c1;
+    stroke: #eff0f0;
+}
+
+.Ana {
+   fill: #6591ee;
+   stroke: #d3d7e7;
+}
+
+.Lucio {
+    fill: #45ea22;
+    stroke: #f6ed60;
+}
+
+.Mercy {
+    fill: #fffdf5;
+    stroke: #ffaf01;
+}
+
+.Symmetra {
+    fill: #3cffff;
+    stroke: #3e90b5;
+}
+
+.Zenyatta {
+    fill: #eed81e;
+    stroke: #e2e2dc;
+}
+
+.Solo {
+    fill: whitesmoke;
+    stroke: darkgrey;
+}

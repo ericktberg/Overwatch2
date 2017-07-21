@@ -38,10 +38,11 @@ div#topBar {
 }
 
 div#sideBar {
+    padding: 10px 10px 10px 10px;
     z-index: 4;
     top: 5%;
     height: 95%;
-    width: 400px;
+    width: 380px;
     left: -410px;
     transition: all .3s ease-in-out;
     background: white;

@@ -17,6 +17,7 @@ and open the template in the editor.
         <script type="text/javascript" src="index.js"></script>
         <script type="text/javascript" src="input.js"></script>
 
+        <link rel="stylesheet" href="heroes.css">
         <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="topBar.css">
     </head>
@@ -39,7 +40,14 @@ and open the template in the editor.
             <!--Visualization content goes here-->
         </div>
         <div id="sideBar" class="open">
-            <!--Sliding sidebar with extra information-->
+            <form id="gameSave">      
+                Player: <input type="text" name="player" style="width:95%">
+                Player SR: <input type="text" name="playerSR" style="width:95%">
+                Team SR: <input type="text" name="teamSR" style="width:95%">
+                Enemy Team SR: <input type="text" name="enemySR" style="width:95%">
+                Video Url: <input type="text" name="videoURL" style="width:95%">
+                <input type="submit" name="Submit">
+            </form>
         </div>
     </body>
 </html>
