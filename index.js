@@ -10,7 +10,7 @@
 
 /* global d3 */
 
-var INFO = true;
+var INFO = false;
 
 
 /*  When window loads, display default content
@@ -24,7 +24,6 @@ $(document).ready(function () {
     
     $("#datepicker").datepicker();
     
-    heroSelect();
     
     /**************** TAG: not a global element **************/
     $("#gameSave").submit(function(e) {
@@ -42,93 +41,7 @@ $(document).ready(function () {
     });
 });
 
-/* The hero select menu is a variant of a radial menu.
- * 
- * It has a center and four quadrants surrounding the center
- * Each quadrant represents a class
- * 
- * Elements are placed in their corresponding quadrant in a radial pattern
- * The center of the circle the radial pattern is translated to begin within each quadrant
- */
 
-function heroSelect() {
-    var root = d3.select("#inputModal");
-    var svg = root.append("svg").attr("height", "100%").attr("width", "100%").attr("id", "heroSelect");
-    var c = {x: 800, y: 500};
-    
-    var attack = characters.filter(function(d) {
-        return d.class === "attack";
-    });
-    var defense = characters.filter(function(d) {
-        return d.class === 'defense';
-    });
-    var tank = characters.filter(function(d) {
-        return d.class === 'tank';
-    });
-    var support = characters.filter(function(d) {
-        return d.class === 'support';
-    });
-    
-    var heroClick = function(d) { console.log($(this).addClass("selected")); };
-    var heroHover = function(d) { console.log(d); };
-    
-    createQuadrant(svg, 1, heroClick, heroHover, attack, 30, c);
-    createQuadrant(svg, 2, heroClick, heroHover, defense, 30, c);
-    createQuadrant(svg, 3, heroClick, heroHover, support, 30, c);
-    createQuadrant(svg, 4, heroClick, heroHover, tank, 30, c);
-}
-
-/* Create row of a radial menu, populated with circles of desired radius.
-* Class the created elements according to data[name]
-*/
-var createRow = function(svg, clicked, hovered, rowNumb, circleRadius, center, quadrant, data) {
-    var circlesInRow = 2*rowNumb;
-
-    var i,
-        degrees = Math.PI/(2*circlesInRow-2),
-        distance = rowNumb*circleRadius*2.2;
-
-    for (i = 0; i < circlesInRow && i < data.length; i++) {
-        svg.append("circle")
-            .attr("r", circleRadius)
-            .attr("transform", "translate(" + (center.x + quadrant.x*Math.cos(i*degrees)*distance) + "," + (center.y + quadrant.y*Math.sin(i*degrees)*distance) + ")")
-            .attr("class", "menu " + data[i].name)
-            .attr("name", data[i].name)
-            .on("mouseover", hovered)
-            .on("click", clicked);
-    }
-};
-
-/* Fill out an entire quadrant
-* Compute the number of rows needed on the fly and partially fill the last.
-* Data dependent on how many elements are created and what the result will look like
-* 
-* TODO: Algorithm can currently only handle 3 rows without overlapping circles.
-*/
-var createQuadrant = function(svg, quadNum, clicked, hovered, data, radius, center) {
-    var quadrant = [{x: -1, y: -1}, {x: 1, y: -1}, {x: -1, y: 1}, {x: 1, y: 1}][quadNum - 1];
-    
-    var numOfRows = 0;
-    var elementsLeft = data.length;
-    var c = {x: center.x + quadrant.x*(radius*2.5)/2, y: center.y + quadrant.y*(radius*2.5)/2};
-
-    svg.append("circle")
-            .attr("r", radius)
-            .attr("transform", "translate(" + c.x + "," + c.y + ")")
-            .attr("class", "menu " + data[0].name)
-            .attr("name", data[i].name)
-            .on("mouseover", hovered)
-            .on("click", clicked);
-    elementsLeft--;
-    
-    data = data.slice(1);
-
-    while(elementsLeft > 0) {
-        createRow(svg, clicked, hovered, ++numOfRows, radius, c, quadrant, data);
-        data = data.slice(2*numOfRows);
-        elementsLeft = elementsLeft -  2*numOfRows;
-    }
-};
 
 // Maps button
 // On hover, display 
@@ -141,6 +54,24 @@ function graphButton() {
     
 }
 
+/* Display an arbitrary modal. 
+ * 
+ * All other modals are closed out
+ * Then the appropriate modal and the modals object is displayed
+ */
+function displayModal(id) {
+    $('#modals').css({display: 'block'});
+    $('#modals').children().css({display: 'none'});
+    $(id).css({display: 'block'});
+}
+
+/* Close a modal.
+ * 
+ */
+function closeModal(id) {
+    $('#modals').css({display: 'none'});
+    $(id).css({display: 'none'});
+}
 // A sidebar pops out for use in some visualizations.
 // TopBar buttons are effected by sidebar positioning
 function toggleSideBar() {

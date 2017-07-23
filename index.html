@@ -20,13 +20,27 @@ and open the template in the editor.
 
         <link rel="stylesheet" href="heroes.css">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+        <link rel="stylesheet" href="input.css">
         <link rel="stylesheet" href="index.css">
         <link rel="stylesheet" href="topBar.css">
     </head>
     <body>
         <div id="modals">
             <div id="inputModal"></div>
-            
+            <div id="inputForm">
+                <form id="gamedata">
+                    Player Hero: <input type="text" name="playerHero" style="width:95%">
+                    Enemy Hero: <input type="text" name="enemyHero" style="width:95%">
+                    Elimination Method: 
+                    <select id="methodSelect" name="method">
+                    </select><br>
+                    <input type="radio" name="mode" onchange="avatarChange()" value="Elimination"/>Elimination<br>
+                    <input type="radio" name="mode" onchange="avatarChange()" value="Death"/>Death<br>
+                    <input type="radio" name="mode" onchange="avatarChange()" value="Assist"/>Assist<br>
+                    <input type="radio" name="side" value="Attack"/>Attack<br>
+                    <input type="radio" name="side" value="Defense"/>Defense<br>
+                </form>
+            </div>
         </div>
         <div id="topBar" class="open">
             

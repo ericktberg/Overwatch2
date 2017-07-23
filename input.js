@@ -1,4 +1,4 @@
-/* global map_, d3, INFO *** declared in map.js */
+/* global map_, d3, INFO, characters *** declared in map.js */
 
 /*******************************************************************************
  * 
@@ -59,6 +59,100 @@
  * 
  ******************************************************************************/
 
+/* The hero select menu is a variant of a radial menu.
+ * 
+ * It has a center and four quadrants surrounding the center
+ * Each quadrant represents a class
+ * 
+ * Elements are placed in their corresponding quadrant in a radial pattern
+ * The center of the circle the radial pattern is translated to begin within each quadrant
+ * 
+ * @param {object} c : the center of the hero select. Will be subject to some limitations in practice
+ */
+function heroSelect(c) {
+    console.log(c);
+    var root = d3.select("#inputModal");
+    var svg = root.append("svg").attr("height", "100%").attr("width", "100%").attr("id", "heroSelect");
+    
+    var attack = characters.filter(function(d) {
+        return d.class === "attack";
+    });
+    var defense = characters.filter(function(d) {
+        return d.class === 'defense';
+    });
+    var tank = characters.filter(function(d) {
+        return d.class === 'tank';
+    });
+    var support = characters.filter(function(d) {
+        return d.class === 'support';
+    });
+    
+    var heroClick = function() { console.log($(this).addClass("selected")); };
+    var heroHover = function() { $(this).css("opacity", ".9"); };
+    var heroUnHover = function() { $(this).css("opacity", ".4"); };
+    
+    createQuadrant(svg, 1, heroClick, heroHover, heroUnHover, attack, 30, c);
+    createQuadrant(svg, 2, heroClick, heroHover, heroUnHover, defense, 30, c);
+    createQuadrant(svg, 3, heroClick, heroHover, heroUnHover, support, 30, c);
+    createQuadrant(svg, 4, heroClick, heroHover, heroUnHover, tank, 30, c);
+}
+
+/* Create row of a radial menu, populated with circles of desired radius.
+* Class the created elements according to data[name]
+*/
+var createRow = function(svg, clicked, hovered, mouseOut, rowNumb, circleRadius, center, quadrant, data) {
+    var circlesInRow = 2*rowNumb;
+
+    var i,
+        degrees = Math.PI/(2*circlesInRow-2),
+        distance = rowNumb*circleRadius*2.2;
+
+    for (i = 0; i < circlesInRow && i < data.length; i++) {
+        svg.append("circle")
+            .attr("r", circleRadius)
+            .attr("transform", "translate(" + (center.x + quadrant.x*Math.cos(i*degrees)*distance) + "," + (center.y + quadrant.y*Math.sin(i*degrees)*distance) + ")")
+            .attr("class", "menu " + data[i].name)
+            .style("opacity", ".4")
+            .attr("name", data[i].name)
+            .on("mouseover", hovered)
+            .on("mouseout", mouseOut)
+            .on("click", clicked);
+    }
+};
+
+/* Fill out an entire quadrant
+* Compute the number of rows needed on the fly and partially fill the last.
+* Data dependent on how many elements are created and what the result will look like
+* 
+* TODO: Algorithm can currently only handle 3 rows without overlapping circles.
+*/
+var createQuadrant = function(svg, quadNum, clicked, hovered, mouseOut, data, radius, center) {
+    var quadrant = [{x: -1, y: -1}, {x: 1, y: -1}, {x: -1, y: 1}, {x: 1, y: 1}][quadNum - 1];
+    
+    var numOfRows = 0;
+    var elementsLeft = data.length;
+    var c = {x: center.x + quadrant.x*(radius*2.5)/2, y: center.y + quadrant.y*(radius*2.5)/2};
+
+    svg.append("circle")
+            .attr("r", radius)
+            .attr("transform", "translate(" + c.x + "," + c.y + ")")
+            .attr("class", "menu " + data[0].name)
+            .attr("name", data[0].name)
+            .style("opacity", ".4")
+            .on("mouseover", hovered)
+            .on("mouseout", mouseOut)
+            .on("click", clicked);
+    elementsLeft--;
+    
+    data = data.slice(1);
+
+    while(elementsLeft > 0) {
+        createRow(svg, clicked, hovered, mouseOut, ++numOfRows, radius, c, quadrant, data);
+        data = data.slice(2*numOfRows);
+        elementsLeft = elementsLeft -  2*numOfRows;
+    }
+};
+
 /* 
  * Initialize all html elements that pertain to input
  * 
@@ -108,16 +202,17 @@ function initInput(container) {
          *      1. If the user enters valid values, and accepts them, populate the svg
          *      2. If the user does not enter valid values and accepts, point out errors: keep modal open +
          *      3. If the user cancels the modal, do not populate the svg.
+         *      
+         *  Break the modal down after use
          */
-        $('#modals').css({display: 'block'});
-        $('#inputModal').css({display: 'block'});
+        heroSelect({x: mouse.layerX, y: mouse.layerY});
+        
+        displayModal('#inputModal');
         
         $('#inputModal').find('.menu').unbind('click').click(function() {
-            $('#modals').css({display: 'none'});
-            $('#inputModal').css({display: 'none'});
-            
+            // A hero has been selected. Which one is it?       
+            // Remove the selected status for the next selection.
             hero = $('#heroSelect').find(".selected").attr("name");
-            console.log(hero);
             $('#heroSelect').find(".selected").removeClass("selected");
             /* Determine what the next click will produce based on the previous shape created and validated
              * 
@@ -129,32 +224,51 @@ function initInput(container) {
              * On Hover: 
             */
             if (typeof clicked.lastClick === 'undefined' || clicked.lastClick === 'rect') {
+                // This is either the first element created, or the previous element was the enemy
+                // Either way, create a player icon.
                 clicked.lastClick = 'circle';
                 container.append("circle")
                         .attr("r", 7.5)
                         .attr("transform", "translate(" + transformX + "," + transformY + ")")
                         .attr("class", hero)
                         .on("contextmenu", function () {
-                            d3.event.preventDefault();                            
+                            d3.event.preventDefault(); // Right click does not open normal menu                            
                 });
+                closeModal('#inputModal');
             }
+            /* When the rectangle is created and selected, the pair has been completed.
+             * Open the form menu to save the pair to database.
+             * 
+             * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
+             */
             else if (clicked.lastClick === 'circle') {
                 clicked.lastClick = 'rect';
                 container.append("rect")    
-                        .attr("height", function(d) { return 10; })
-                        .attr("width", function(d) { return 10; })
+                        .attr("height", 10)
+                        .attr("width", 10)
                         .attr("class", hero)
-                        .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")")
+                        .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")") 
                         .on("contextmenu", function () {
-                            d3.event.preventDefault();                            
-                });   
+                            d3.event.preventDefault(); // Right click does not open normal menu                      
+                });
+                
+                displayModal('#inputForm');
             }
+            
+            $('#inputModal').empty();
         });    
         
-        $('#inputModal').find('.cancel').unbind('click').click(function() {
-            $('#modals').css({display: 'none'});
-            $('#inputModal').css({display: 'none'});
+        /* The way to cancel the form submission is by clicking anywhere else in the document
+         * heroSelect is the svg containing the menu. 
+         * 
+         * It spans the whole page and is on top. Clicking it will cancel the menu.
+         */
+        $('#heroSelect').unbind('click').click(function(event) {
+            closeModal('#inputModal');
+            $("#inputModal").empty();
         });
+        
+        
     };
     
     container.on("click", clicked);
