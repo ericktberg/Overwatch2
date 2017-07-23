@@ -70,9 +70,7 @@
  * @param {object} c : the center of the hero select. Will be subject to some limitations in practice
  */
 function heroSelect(c) {
-    console.log(c);
-    var root = d3.select("#inputModal");
-    var svg = root.append("svg").attr("height", "100%").attr("width", "100%").attr("id", "heroSelect");
+    var svg = d3.select("#heroSelect");
     
     var attack = characters.filter(function(d) {
         return d.class === "attack";
@@ -165,111 +163,131 @@ function initInput(container) {
     // Check sidebar +
     
     // Populate sidebar +
-    
+
     /* A user clicks on the map
      *      1. create an svg element at location
      *      2. Open a mandatory dialog box to select hero
+     *      3. Populate the creation form with hero appropriate hero data
+     *      4. Once both heroes have been selected open the data creation form
      */
     var clicked = function() {
-        var mouse = d3.event,
-            transform = container.attr("transform"), 
-            transformX = mouse.layerX,
-            transformY = mouse.layerY,
-            locationX,
-            locationY;
-        
-        var lastCircle,
-            lastRect;
-    
-        var hero;
-        
-        if (transform) {
-            transform = getTransformation(transform);
-            // Transform data to have 1:1 correspondence with svg
-            transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
-            transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
-        }
-        
-        if (INFO) {
-            console.log("[INFO] " + "transformX: " + transformX + " transformY: " + transformY);
-        }
-        
-        /* Create a modal to force user to fill out dialog
-         *      - Moving cursor off the modal will turn the modal transparent to view beneath. +
-         *      - The only way to close the modal is by accepting or denying it 
-         *      
-         * Modal interaction options:
-         *      1. If the user enters valid values, and accepts them, populate the svg
-         *      2. If the user does not enter valid values and accepts, point out errors: keep modal open +
-         *      3. If the user cancels the modal, do not populate the svg.
-         *      
-         *  Break the modal down after use
-         */
-        heroSelect({x: mouse.layerX, y: mouse.layerY});
-        
-        displayModal('#inputModal');
-        
-        $('#inputModal').find('.menu').unbind('click').click(function() {
-            // A hero has been selected. Which one is it?       
-            // Remove the selected status for the next selection.
-            hero = $('#heroSelect').find(".selected").attr("name");
-            $('#heroSelect').find(".selected").removeClass("selected");
-            /* Determine what the next click will produce based on the previous shape created and validated
-             * 
-             * Each shape created will be both clickable and hoverable +
-             * 
-             * On click: 
-             *      - Re-open the modal and allow values to be changed. +
-             *      - Show the matching pair +
-             * On Hover: 
-            */
-            if (typeof clicked.lastClick === 'undefined' || clicked.lastClick === 'rect') {
-                // This is either the first element created, or the previous element was the enemy
-                // Either way, create a player icon.
-                clicked.lastClick = 'circle';
-                container.append("circle")
-                        .attr("r", 7.5)
-                        .attr("transform", "translate(" + transformX + "," + transformY + ")")
-                        .attr("class", hero)
-                        .on("contextmenu", function () {
-                            d3.event.preventDefault(); // Right click does not open normal menu                            
-                });
-                closeModal('#inputModal');
+        if (!clicked.formOpen) {
+            // Variables containing click information
+            var mouse = d3.event,
+                transform = container.attr("transform"), 
+                transformX = mouse.layerX,
+                transformY = mouse.layerY;
+
+            // Used to save location data potentially + 
+            var locationX,
+                locationY;
+
+            // Used for undo statements +
+            var lastCircle,
+                lastRect;
+
+            var hero;
+
+            if (transform) {
+                transform = getTransformation(transform);
+                // Transform data to have 1:1 correspondence with svg
+                transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
+                transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
             }
-            /* When the rectangle is created and selected, the pair has been completed.
-             * Open the form menu to save the pair to database.
-             * 
-             * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
+
+            if (INFO) {
+                console.log("[INFO] " + "transformX: " + transformX + " transformY: " + transformY);
+            }
+
+            /* Create a modal to force user to fill out dialog
+             *      - Moving cursor off the modal will turn the modal transparent to view beneath. +
+             *      - The only way to close the modal is by accepting or denying it 
+             *      
+             * Modal interaction options:
+             *      1. If the user enters valid values, and accepts them, populate the svg
+             *      2. If the user does not enter valid values and accepts, point out errors: keep modal open +
+             *      3. If the user cancels the modal, do not populate the svg.
+             *      
+             *  Break the modal down after use
              */
-            else if (clicked.lastClick === 'circle') {
-                clicked.lastClick = 'rect';
-                container.append("rect")    
-                        .attr("height", 10)
-                        .attr("width", 10)
-                        .attr("class", hero)
-                        .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")") 
-                        .on("contextmenu", function () {
-                            d3.event.preventDefault(); // Right click does not open normal menu                      
-                });
-                
-                displayModal('#inputForm');
-            }
-            
-            $('#inputModal').empty();
-        });    
-        
-        /* The way to cancel the form submission is by clicking anywhere else in the document
-         * heroSelect is the svg containing the menu. 
-         * 
-         * It spans the whole page and is on top. Clicking it will cancel the menu.
-         */
-        $('#heroSelect').unbind('click').click(function(event) {
-            closeModal('#inputModal');
-            $("#inputModal").empty();
-        });
-        
-        
+            heroSelect({x: mouse.layerX, y: mouse.layerY});
+
+            displayModal('#heroSelect');
+
+            $('#heroSelect').find('.menu').unbind('click').click(function() {
+                // A hero has been selected. Which one is it?       
+                // Remove the selected status for the next selection.
+                hero = $('#heroSelect').find(".selected").attr("name");
+                $('#heroSelect').find(".selected").removeClass("selected");
+                /* Determine what the next click will produce based on the previous shape created and validated
+                 * 
+                 * Each shape created will be both clickable and hoverable +
+                 * 
+                 * On click: 
+                 *      - Re-open the modal and allow values to be changed. +
+                 *      - Show the matching pair +
+                 * On Hover: 
+                */
+                if (typeof clicked.lastClick === 'undefined' || clicked.lastClick === 'rect') {
+                    // This is either the first element created, or the previous element was the enemy
+                    // Either way, create a player icon.
+                    clicked.lastClick = 'circle';
+                    container.append("circle")
+                            .attr("r", 7.5)
+                            .attr("transform", "translate(" + transformX + "," + transformY + ")")
+                            .attr("class", hero)
+                            .on("contextmenu", function () {
+                                d3.event.preventDefault(); // Right click does not open normal menu                            
+                    });
+                    // Select the player hero value in the form to come
+                    $('#playerHero option[value="' + hero + '"]').prop('selected', true);
+                    closeModal('#heroSelect');
+                }
+                /* When the rectangle is created and selected, the pair has been completed.
+                 * Open the form menu to save the pair to database.
+                 * 
+                 * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
+                 */
+                else if (clicked.lastClick === 'circle') {
+                    clicked.lastClick = 'rect';
+                    container.append("rect")    
+                            .attr("height", 10)
+                            .attr("width", 10)
+                            .attr("class", hero)
+                            .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")") 
+                            .on("contextmenu", function () {
+                                d3.event.preventDefault(); // Right click does not open normal menu                      
+                    });
+                    // Select the enemy hero value in the form to come
+                    $('#enemyHero option[value="' + hero + '"]').prop('selected', true);
+                    // Opening a new modal will automatically close out of the previous modal
+                    floatModal('#inputForm');
+
+                    clicked.formOpen = true;
+                }
+                    
+                // Now that the menu has been used, delete all of the created menu elements for recreation on the next click
+                $('#heroSelect').empty();
+            });    
+
+            /* The way to cancel the form submission is by clicking anywhere else in the document
+             * heroSelect is the svg containing the menu. It spans the whole page and is on top. Clicking it will cancel the menu.
+             */
+            $('#heroSelect').unbind('click').click(function(event) {
+                if (event.target == $('#heroSelect')[0]) {
+                    closeModal('#heroSelect');
+                    // Now that the menu has been used, delete all of the created menu elements for recreation on the next click
+                    $("#heroSelect").empty();
+                }
+            });
+        }
     };
+    
+    $('#inputFormSubmit').click(function (e) {
+        closeModal('#inputForm');
+        clicked.formOpen = false;
+        e.preventDefault(); 
+    });
     
     container.on("click", clicked);
 };

@@ -26,11 +26,13 @@ and open the template in the editor.
     </head>
     <body>
         <div id="modals">
-            <div id="inputModal"></div>
-            <div id="inputForm">
+            <svg id="heroSelect" height="100%" width="100%"></svg>
+            <div id="inputForm" class="modal">
                 <form id="gamedata">
-                    Player Hero: <input type="text" name="playerHero" style="width:95%">
-                    Enemy Hero: <input type="text" name="enemyHero" style="width:95%">
+                    Player Hero: <select id="playerHero" name="playerHero">
+                    </select><br>
+                    Enemy Hero: <select id="enemyHero" name="enemyHero">
+                    </select><br>
                     Elimination Method: 
                     <select id="methodSelect" name="method">
                     </select><br>
@@ -39,6 +41,7 @@ and open the template in the editor.
                     <input type="radio" name="mode" onchange="avatarChange()" value="Assist"/>Assist<br>
                     <input type="radio" name="side" value="Attack"/>Attack<br>
                     <input type="radio" name="side" value="Defense"/>Defense<br>
+                    <input type="submit" id="inputFormSubmit">
                 </form>
             </div>
         </div>

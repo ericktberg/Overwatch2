@@ -22,8 +22,12 @@ var INFO = false;
 $(document).ready(function () {
     drawEnvironment(d3.select("#vizContent"));
     
+    /**************** TAG: not a global element **************/
     $("#datepicker").datepicker();
     
+    /**************** TAG: not a global element **************/
+    fillSelect("#playerHero", characters.map(function(d) { return d.name; }));
+    fillSelect("#enemyHero", characters.map(function(d) { return d.name; }));
     
     /**************** TAG: not a global element **************/
     $("#gameSave").submit(function(e) {
@@ -54,19 +58,63 @@ function graphButton() {
     
 }
 
+/* Fill a select element with options with value and text given by a dataset.
+ * 
+ * @param {type} id : The id of the select in jquery format. 
+ * @param {type} data : An array of values
+ */
+function fillSelect(id, data) {
+    var list = $(id)[0];
+    
+    $.each(data, function(i, val) {
+        list.options[list.options.length] = new Option(val, val);
+    });
+}
+
 /* Display an arbitrary modal. 
  * 
  * All other modals are closed out
  * Then the appropriate modal and the modals object is displayed
+ * 
+ * To animate a fade out, first display, then animate opacity
  */
 function displayModal(id) {
-    $('#modals').css({display: 'block'});
+    $('#modals').css({display: 'block', 'pointer-events': 'auto', 'background-color': 'rgba(0,0,0,.3)'});
     $('#modals').children().css({display: 'none'});
     $(id).css({display: 'block'});
 }
 
+/* A floated modal allows interaction with the background on 
+ * 
+ * When hovering over the modal, display at full opacity +
+ * When hovering away from modal display the background and reduce opacity of modal +
+ * 
+ * This needs an obvious creation animation, otherwise it can be hard to see when the cursor isn't hovered over it automatically +
+ * 
+ * @param {type} id
+ * @returns {undefined}
+ */
+function floatModal(id) {
+    console.log("HERE");
+    // The modal background of transparent gray is only displayed when hovering over the modal
+    // This gives feedback to user that the background is interactable.
+    $('#modals').css({display: 'block', 'pointer-events': 'none', 'background-color': 'rgba(0,0,0,0)'}).unbind('hover').hover(function () {
+        $(this).css({'background-color': 'rgba(0,0,0,.3)'});
+    }, function () {
+        $(this).css({'background-color': 'rgba(0,0,0,0)'});
+    });
+    $('#modals').children().css({display: 'none'});
+    // Reduce opacity of modal itself when it is being hovered over
+    $(id).css({display: 'block', 'pointer-events': 'auto'}).unbind('hover').hover(function () {
+        $(this).css({opacity: .9});
+    }, function () {
+        $(this).css({opacity: .3});
+    });
+}
+
 /* Close a modal.
  * 
+ * To animate fade out, animate opacity then stop displaying
  */
 function closeModal(id) {
     $('#modals').css({display: 'none'});

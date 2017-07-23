@@ -8,18 +8,14 @@ and open the template in the editor.
     Author     : Erick
 */
 
-#inputModal {
-
-}
 
 .menu {
     z-index: 5;
 }
 
 #inputForm {
-    position: fixed;
     width: 300px;
     background-color: white;
     left: 50%;
-    top: 50%;
+    top: 35%;
 }
