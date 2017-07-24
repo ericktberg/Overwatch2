@@ -95,7 +95,6 @@ function displayModal(id) {
  * @returns {undefined}
  */
 function floatModal(id) {
-    console.log("HERE");
     // The modal background of transparent gray is only displayed when hovering over the modal
     // This gives feedback to user that the background is interactable.
     $('#modals').css({display: 'block', 'pointer-events': 'none', 'background-color': 'rgba(0,0,0,0)'}).unbind('hover').hover(function () {

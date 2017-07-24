@@ -7,20 +7,20 @@
  * 
  * Input occurs in several stages
  *      1. Find battletag associated with player +
- *          * does it exist? if it doesn't, create an entry +
+ *          * does it exist? if it doesn't, create an entry 
  *          * Is this player associated with a User? or is this a pro player? +
  *              Eventually only pro player data will be publically available
  *              We will want to quality control this data, 
  *              TODO: find a way to quality control the data +
  *              
  *      2. Collect information about the game being played +
- *          * Team elos, player elo, Win/Loss, Map, Video data +
+ *          * Team elos, player elo, Win/Loss, Map, Video data
  *          * Video data can be from disk, url, or twitch +
  *          * Has this video been used already? Avoid duplicates +
  *          * Add a video player to the interface ?
  *          
  *      3. Easy to use interface to collect elimination and death information +
- *          * Place pins for a pair (player/enemy) locations, player first with left click +
+ *          * Place pins for a pair (player/enemy) locations, player first with left click
  *          * Move previously placed pin with right click +
  *          * Undo last action with ctrl-z +
  *      3a. Information about pins prompted on ctrl+lmb + 
@@ -209,9 +209,9 @@ function initInput(container) {
     
     // Populate sidebar +
 
-
-   
-    $('#inputForm').on('change', elimMethodChange);
+    $('#inputForm').change(elimMethodChange);
+    
+    
     /* A user clicks on the map
      *      1. create an svg element at location
      *      2. Open a mandatory dialog box to select hero
@@ -219,23 +219,16 @@ function initInput(container) {
      *      4. Once both heroes have been selected open the data creation form
      */
     var clicked = function() {
+        // Variables containing click information
+        var mouse = d3.event,
+            transform = container.attr("transform"), 
+            transformX = mouse.layerX,
+            transformY = mouse.layerY;
+
+        var newObject;
+        var hero;
+        // When the submission form is open, no new data can be created
         if (!clicked.formOpen) {
-            // Variables containing click information
-            var mouse = d3.event,
-                transform = container.attr("transform"), 
-                transformX = mouse.layerX,
-                transformY = mouse.layerY;
-
-            // Used to save location data potentially + 
-            var locationX,
-                locationY;
-
-            // Used for undo statements +
-            var lastCircle,
-                lastRect;
-
-            var hero;
-
             if (transform) {
                 transform = getTransformation(transform);
                 // Transform data to have 1:1 correspondence with svg
@@ -280,16 +273,15 @@ function initInput(container) {
                     // This is either the first element created, or the previous element was the enemy
                     // Either way, create a player icon.
                     clicked.lastClick = 'circle';
-                    container.append("circle")
+                    newObject = container.append("circle")
                             .attr("r", 7.5)
                             .attr("transform", "translate(" + transformX + "," + transformY + ")")
-                            .attr("class", hero)
-                            .on("contextmenu", function () {
-                                d3.event.preventDefault(); // Right click does not open normal menu                            
-                    });
+                            ;
                     // Select the player hero value in the form to come
                     $('#playerHero option[value="' + hero + '"]').prop('selected', true);
+                    
                     closeModal('#heroSelect');
+                    clicked.lastCircle = newObject;
                 }
                 /* When the rectangle is created and selected, the pair has been completed.
                  * Open the form menu to save the pair to database.
@@ -298,23 +290,37 @@ function initInput(container) {
                  */
                 else if (clicked.lastClick === 'circle') {
                     clicked.lastClick = 'rect';
-                    container.append("rect")    
+                    newObject = container.append("rect")    
                             .attr("height", 10)
                             .attr("width", 10)
-                            .attr("class", hero)
-                            .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")") 
-                            .on("contextmenu", function () {
-                                d3.event.preventDefault(); // Right click does not open normal menu                      
-                    });
+                            .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
                     // Select the enemy hero value in the form to come
                     $('#enemyHero option[value="' + hero + '"]').prop('selected', true);
-                    // Opening a new modal will automatically close out of the previous modal
+                    
                     elimMethodChange();
+                    // Opening a new modal will automatically close out of the previous modal
                     floatModal('#inputForm');
 
                     clicked.formOpen = true;
+                    clicked.lastRect = newObject;
                 }
-                    
+                   
+                /* Objects created have shared properties
+                 *      
+                 * Drag:
+                 *      - On start, move to front, increase size and stroke and do the same to its sibling + 
+                 */
+                function dragged() {
+                    d3.select(this).attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
+                }
+                
+                if (newObject) {
+                    newObject.attr("class", hero)
+                            .call(d3.drag().on("drag", dragged))
+                            .attr("posX", transformX)
+                            .attr("posY", transformY)
+                            .on('contextmenu', function() { d3.event.preventDefault(); });
+                }
                 // Now that the menu has been used, delete all of the created menu elements for recreation on the next click
                 $('#heroSelect').empty();
             });    
@@ -332,15 +338,83 @@ function initInput(container) {
         }
     };
     
-    $('#inputFormSubmit').click(function (e) {
+    /* Submit the input form for the pair
+     * 
+     *  1. Check for requirements
+     *  2. Gather any extra data from the map (e.g. transform data)
+     *  3. Send ajax to php file
+     *  4. Fix the data editing capabilities
+     */
+    $('#gamedata').submit(function (e) {
+        var url = "saveGameData.php";
+        var playerPos,
+            enemyPos;
+        var positionData;
+        playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
+        enemyPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
+        //console.log(playerPos);
+
+        positionData = [{name: 'playerX', value: playerPos.x},
+                        {name: 'playerY', value: playerPos.y},
+                        {name: 'playerZ', value: playerPos.z},
+                        {name: 'enemyX', value: enemyPos.x},
+                        {name: 'enemyY', value: enemyPos.y},
+                        {name: 'enemyZ', value: enemyPos.z}];
+                    
+        console.log($(this).serializeArray().concat(positionData));
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: $(this).serializeArray().concat(positionData)
+        }).done(function(response) { 
+            console.log(response); 
+        });
+        
+        // Once the form is submitted, the values are set in stone. 
+        // "Undoing" will delete the two previous, not allow modification
+        fixElement(clicked.lastCircle);
+        fixElement(clicked.lastRect);
+        
+        // Close the form
         closeModal('#inputForm');
         clicked.formOpen = false;
+        
         e.preventDefault(); 
+    });
+    
+    $('#playerHero').change(function() { 
+        clicked.lastCircle.attr('class', $(this).find(':selected').text());
+    });
+    $('#enemyHero').change(function() { 
+        clicked.lastRect.attr('class', $(this).find(':selected').text());
     });
     
     container.on("click", clicked);
 };
+/* All maps are split into quadrants
+ * Based on the map image specifications and the transform coordinates from the svg, determine the individual map positions
+ * 
+ * TODO: Do I even need to do this?
+ * 
+ * @param {type} original
+ * @returns {undefined}
+ */
+function quadrantCoords(original) {
+    original.z = 0;
+    return original;
+}
 
+/* Remove interactability with an element.
+ * Lower opacity to provide users with feedback
+ * 
+ * @param {type} element
+ * @returns {undefined}
+ */
+function fixElement(element) {
+    element.on('mousedown.drag', null)
+            .on('contextmenu', function() { d3.event.preventDefault(); })
+            .style('opacity', '.5');
+}
 /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
  * 
  * Take a d3 transform and return a legible javascript object
