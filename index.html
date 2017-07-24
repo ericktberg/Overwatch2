@@ -33,14 +33,15 @@ and open the template in the editor.
                     </select><br>
                     Enemy Hero: <select id="enemyHero" name="enemyHero">
                     </select><br>
+                    <input type="radio" name="mode" value="Elimination"/>Elimination<br>
+                    <input type="radio" name="mode" value="Death"/>Death<br>
+                    <input type="radio" name="mode" value="Assist"/>Assist<br>
+                    <input type="radio" name="side" value="Attack"/>Attack<br>
+                    <input type="radio" name="side" value="Defense"/>Defense<br>
                     Elimination Method: 
                     <select id="methodSelect" name="method">
                     </select><br>
-                    <input type="radio" name="mode" onchange="avatarChange()" value="Elimination"/>Elimination<br>
-                    <input type="radio" name="mode" onchange="avatarChange()" value="Death"/>Death<br>
-                    <input type="radio" name="mode" onchange="avatarChange()" value="Assist"/>Assist<br>
-                    <input type="radio" name="side" value="Attack"/>Attack<br>
-                    <input type="radio" name="side" value="Defense"/>Defense<br>
+
                     <input type="submit" id="inputFormSubmit">
                 </form>
             </div>

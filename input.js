@@ -151,6 +151,51 @@ var createQuadrant = function(svg, quadNum, clicked, hovered, mouseOut, data, ra
     }
 };
 
+/* One of the important form elements is a 'method' of elimination
+ * This depends on both what hero is being used, and whether it is an elimination or a death
+ * 
+ * Check the mode then check what hero is being used. 
+ * Use this information to populate the elimination mode select dropdown. 
+ * 
+ * TODO: OPTIMIZATION: This is called on every change to the form, not just the relevant ones.
+ * TODO: This should also be called on initialization of the list.
+ *          Default values for radio buttons
+ */
+function elimMethodChange() {
+    var mode,
+        hero,
+        methodList = [],
+        field,
+        character;
+            
+    // Remove any previous selections
+    $('#methodSelect').empty();
+            
+    mode = $('input[name=mode]:checked', '#inputForm').val(); 
+    if (mode === 'Death') {
+        hero = $('#enemyHero').find(":selected").text();
+    } 
+    else { // Is an Assist or Elimination, either way it takes player data
+        hero = $('#playerHero').find(":selected").text();
+    }
+    
+    // Given the hero name, we can create the method list from the characters object
+    character = characters.filter(function(d) { return d.name === hero; })[0];
+    for (field in character) {
+        switch (field) {
+            case 'lmb':
+            case 'rmb':
+            case 'ability1':
+            case 'ability2':
+                methodList.push(character[field]);
+                break;
+            default:
+        }
+    }
+
+    fillSelect('#methodSelect', methodList)
+}
+
 /* 
  * Initialize all html elements that pertain to input
  * 
@@ -164,6 +209,9 @@ function initInput(container) {
     
     // Populate sidebar +
 
+
+   
+    $('#inputForm').on('change', elimMethodChange);
     /* A user clicks on the map
      *      1. create an svg element at location
      *      2. Open a mandatory dialog box to select hero
@@ -261,6 +309,7 @@ function initInput(container) {
                     // Select the enemy hero value in the form to come
                     $('#enemyHero option[value="' + hero + '"]').prop('selected', true);
                     // Opening a new modal will automatically close out of the previous modal
+                    elimMethodChange();
                     floatModal('#inputForm');
 
                     clicked.formOpen = true;
@@ -274,7 +323,7 @@ function initInput(container) {
              * heroSelect is the svg containing the menu. It spans the whole page and is on top. Clicking it will cancel the menu.
              */
             $('#heroSelect').unbind('click').click(function(event) {
-                if (event.target == $('#heroSelect')[0]) {
+                if (event.target === $('#heroSelect')[0]) {
                     closeModal('#heroSelect');
                     // Now that the menu has been used, delete all of the created menu elements for recreation on the next click
                     $("#heroSelect").empty();
