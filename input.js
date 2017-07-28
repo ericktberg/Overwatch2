@@ -337,50 +337,99 @@ function initInput(container) {
             });
         }
     };
-    
+
     /* Submit the input form for the pair
      * 
      *  1. Check for requirements
      *  2. Gather any extra data from the map (e.g. transform data)
      *  3. Send ajax to php file
      *  4. Fix the data editing capabilities
+     *  
+     *  The saveGame functions are defined as expressions
+     *  This is to allow the lastID to be passed from one handler to the other.
+     *  the returned gameID from the php file saveGame.php is required for saveGameData
+     *  
+     *  gameID is a foreign key in the schema for this table
+     *  
+     *  Also, 
      */
-    $('#gamedata').submit(function (e) {
-        var url = "saveGameData.php";
-        var playerPos,
-            enemyPos;
-        var positionData;
-        playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
-        enemyPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
-        //console.log(playerPos);
+    var saveGameData = function (e) {
+        if (saveGameData.lastID) {
+            var url = "index.php";
+            var playerPos,
+                enemyPos;
+            var positionData;
+            playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
+            enemyPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
+            //console.log(playerPos);
 
-        positionData = [{name: 'playerX', value: playerPos.x},
-                        {name: 'playerY', value: playerPos.y},
-                        {name: 'playerZ', value: playerPos.z},
-                        {name: 'enemyX', value: enemyPos.x},
-                        {name: 'enemyY', value: enemyPos.y},
-                        {name: 'enemyZ', value: enemyPos.z}];
-                    
-        console.log($(this).serializeArray().concat(positionData));
+            positionData = [{name: 'gameID', value: saveGameData.lastID},
+                            {name: 'playerX', value: playerPos.x},
+                            {name: 'playerY', value: playerPos.y},
+                            {name: 'playerZ', value: playerPos.z},
+                            {name: 'enemyX', value: enemyPos.x},
+                            {name: 'enemyY', value: enemyPos.y},
+                            {name: 'enemyZ', value: enemyPos.z}];
+
+            var formData = $(this).serializeObject();
+            formData['resource'] = 'gamedata';
+            
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: url,
+                data: JSON.stringify(formData)
+            }).done(function(response) { 
+                console.log(response); 
+            });
+
+            // Once the form is submitted, the values are set in stone. 
+            // "Undoing" will delete the two previous, not allow modification
+            fixElement(clicked.lastCircle);
+            fixElement(clicked.lastRect);
+
+            // Close the form
+            closeModal('#inputForm');
+            clicked.formOpen = false;            
+        }
+        e.preventDefault(); 
+    };
+    
+    $('#gamedata').submit(saveGameData);
+    
+    /* Game meta data save handler
+     * 
+     * Send the save request and receive a response containing the gameID of the newly created Game
+     * Use this to provide the foreign key in gameDataSave
+     */
+    var saveGame = function(e) {
+        var url = "index.php";
+        var data = $(this).serialize();
+        console.log(data);
+        var formData = $(this).serializeObject();
+        var sendIt = {};
+        sendIt['resource'] = 'game';
+        sendIt['fields'] = formData;
+                
         $.ajax({
             type: "POST",
             url: url,
-            data: $(this).serializeArray().concat(positionData)
+            data: JSON.stringify(sendIt)
         }).done(function(response) { 
-            console.log(response); 
+            console.log(response);
+            response = JSON.parse(response);
+            // TODO: handle fail cases +
+            if (response.lastID !== 0 && typeof response.lastID === 'number') {
+                
+                saveGameData.lastID = response.lastID;
+            }
+            
         });
-        
-        // Once the form is submitted, the values are set in stone. 
-        // "Undoing" will delete the two previous, not allow modification
-        fixElement(clicked.lastCircle);
-        fixElement(clicked.lastRect);
-        
-        // Close the form
-        closeModal('#inputForm');
-        clicked.formOpen = false;
-        
-        e.preventDefault(); 
-    });
+
+        e.preventDefault();
+    };
+    
+    $("#gameSave").submit(saveGame);
     
     $('#playerHero').change(function() { 
         clicked.lastCircle.attr('class', $(this).find(':selected').text());
@@ -391,6 +440,39 @@ function initInput(container) {
     
     container.on("click", clicked);
 };
+
+/* Create correct JSON from a form.
+ * Eliminate any empty fields.
+ * 
+ * Code snippet from https://css-tricks.com/snippets/jquery/serialize-form-to-json/
+ * @returns object
+ */
+$.fn.serializeObject = function() {
+    var o = {};
+    var a = this.serializeArray();
+    
+    $.each(a, function(index, element) {
+        if(o[element.name]) {
+            // Field is already in object. 
+            if (!o[element.name].push) {
+                // The element is not an array yet
+                o[element.name] = [o[element.name]];
+            }
+            // Push the value
+            if (element.value) {
+                o[element.name].push(element.value);
+            }
+        }
+        else {
+            if (element.value) {
+                o[element.name] = element.value;
+            }        
+        }
+    });
+    
+    return o;
+};
+
 /* All maps are split into quadrants
  * Based on the map image specifications and the transform coordinates from the svg, determine the individual map positions
  * 

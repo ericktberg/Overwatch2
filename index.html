@@ -29,17 +29,19 @@ and open the template in the editor.
             <svg id="heroSelect" height="100%" width="100%"></svg>
             <div id="inputForm" class="modal">
                 <form id="gamedata">
-                    Player Hero: <select id="playerHero" name="playerHero">
+                    Player Hero* <select id="playerHero" name="playerHero" required>
                     </select><br>
-                    Enemy Hero: <select id="enemyHero" name="enemyHero">
+                    Enemy Hero* <select id="enemyHero" name="enemyHero" required>
                     </select><br>
-                    <input type="radio" name="mode" value="Elimination"/>Elimination<br>
-                    <input type="radio" name="mode" value="Death"/>Death<br>
-                    <input type="radio" name="mode" value="Assist"/>Assist<br>
-                    <input type="radio" name="side" value="Attack"/>Attack<br>
-                    <input type="radio" name="side" value="Defense"/>Defense<br>
-                    Elimination Method: 
-                    <select id="methodSelect" name="method">
+                    Mode*<br>
+                    <input type="radio" name="mode" value="Elimination" required/>Elimination<br>
+                    <input type="radio" name="mode" value="Death" required/>Death<br>
+                    <input type="radio" name="mode" value="Assist" required/>Assist<br>
+                    Side*<br>
+                    <input type="radio" name="side" value="Attack" required/>Attack<br>
+                    <input type="radio" name="side" value="Defense" required/>Defense<br>
+                    Elimination Method* 
+                    <select id="methodSelect" name="method" required>
                     </select><br>
 
                     <input type="submit" name="Submit">
@@ -57,11 +59,11 @@ and open the template in the editor.
         </div>
         <div id="sideBar" class="open">
             <form id="gameSave">      
-                Player: <input type="text" name="player" style="width:95%">
-                Date: <input id="datepicker" type="text" name="date" style="width:95%">
-                Player SR: <input type="number" name="playerSR" min="1" max="5000" style="width:95%">
-                Team SR: <input type="number" name="teamSR" min="1" max="5000" style="width:95%">
-                Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000" style="width:95%">
+                Player: <input type="text" name="player" style="width:95%" required>*
+                Date: <input id="datepicker" type="text" name="date" style="width:95%" required>*
+                Player SR: <input type="number" name="playerSR" min="1" max="5000" style="width:95%" required>*
+                Team SR: <input type="number" name="teamSR" min="1" max="5000" style="width:95%" required>*
+                Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000" style="width:95%" required>*
                 Video Url: <input type="text" name="videoURL" style="width:95%">
                 <input type="submit" name="Submit">
             </form>

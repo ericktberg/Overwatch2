@@ -29,20 +29,7 @@ $(document).ready(function () {
     fillSelect("#playerHero", characters.map(function(d) { return d.name; }));
     fillSelect("#enemyHero", characters.map(function(d) { return d.name; }));
     
-    /**************** TAG: not a global element **************/
-    $("#gameSave").submit(function(e) {
-        var url = "saveGame.php";
-        
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: $(this).serialize(),
-        }).done(function(response) { 
-            console.log(response); 
-        });
-        
-        e.preventDefault();
-    });
+
 });
 
 
