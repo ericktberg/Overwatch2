@@ -6,15 +6,12 @@
  * 
  */
 include_once 'game.php';
+include_once 'gamedata.php';
 
 $method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 
 /* Grab the http request information */
-$post = file_get_contents('php://input');
-$json = json_decode($post, true);
-
-$resource = $json['resource'];
-$fields = $json['fields'];
+$resource = filter_input(INPUT_POST, 'resource');
 
 /* Check media type, send error if not json */
 
@@ -24,10 +21,10 @@ $fields = $json['fields'];
 $PDO;
 switch ($resource) {
     case 'game':
-        $PDO = new Game;
+        $PDO = new Game($method);
         break;
     case 'gamedata':
-        $PDO = new GameDataHandle;
+        $PDO = new GameData($method);
         break;
     default:
         // $PDO = new PdoHandle;
@@ -38,16 +35,16 @@ switch ($resource) {
 $response;
 switch ($method) {
     case 'POST':
-        $response = $PDO->create($resource, $fields);
+        $response = $PDO->create();
         break;
     case 'GET':
-        $response = $PDO->read($resource, $fields);
+        $response = $PDO->read();
         break;
     case 'PUT':
-        $PDO->update($resource, $fields);
+        $PDO->update();
         break;
     case 'DELETE':
-        $PDO->delete($resource, $fields);
+        $PDO->delete();
         break;
     default:
         break;

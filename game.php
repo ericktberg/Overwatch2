@@ -7,34 +7,74 @@
 include_once 'resource.php';
 
 class Game extends Resource {
+    private $gameID;
+    private $player;
+    private $date;
+    private $playerSR;
+    private $teamSR;
+    private $enemySR;
+    private $videoURL;
 
-    public function read($resource, $fields) {
-        $player = $fields['player'];
-        $date = $fields['date'];
-        $playerSR = $fields['playerSR'];
-        $teamSR = $fields['teamSR'];
-        $enemySR = $fields['enemySR'];
-        
-        $sql = " SELECT g.gameID FROM overwatch.game g\n"
-            . " WHERE date=STR_TO_DATE( ? , '%m/%d/%Y')\n"
-            . " AND player = ? \n"
-            . " AND playerElo= ? \n"
-            . " AND teamElo= ? \n"
-            . " AND enemyTeamElo= ? ;\n";
-        
-        $readGame = $this->pdo->prepare($sql);
-        $readGame->execute([$date, $player, $playerSR, $teamSR, $enemySR]);
-        
-       return $readGameResult = $readGame->fetch();        
+    public function getFields($input) {
+        $this->gameID = filter_input($input, "gameID");
+        $this->player = filter_input($input, "player");
+        $this->date = filter_input($input, "date");
+        $this->playerSR = filter_input($input, "playerSR");
+        $this->teamSR = filter_input($input, "teamSR");
+        $this->enemySR = filter_input($input, "enemySR");
+        $this->videoURL = filter_input($input, "videoURL");
     }
     
-    public function create($resource, $fields) {
-        $player = $fields['player'];
-        $date = $fields['date'];
-        $playerSR = $fields['playerSR'];
-        $teamSR = $fields['teamSR'];
-        $enemySR = $fields['enemySR'];
-
+    /* Basic read function of CRUD. 
+     * Return assoc array result set of correlating row if exists, false otherwise
+     * 
+     */
+    public function read() {
+        $params = []; 
+        $sql = " SELECT gameID, player, date, playerElo, teamElo, enemyTeamElo, videoURL "
+                . " FROM overwatch.game\n"
+                . " WHERE 1=1 ";
+        
+        if ($this->gameID) {
+            $sql .= " AND gameID= ? \n";
+            array_push($params, $this->gameID);
+        }
+        if ($this->player) {
+            $sql .= " AND player= ? \n";
+            array_push($params, $this->player);
+        }
+        if ($this->date) {
+            $sql .= " AND date= STR_TO_DATE( ? , '%m/%d/%Y') \n";
+            array_push($params, $this->date);
+        }
+        if ($this->playerSR) {
+            $sql .= " AND playerElo= ? \n";
+            array_push($params, $this->playerSR);
+        }
+        if ($this->teamSR) {
+            $sql .= " AND teamElo= ? \n";
+            array_push($params, $this->teamSR);
+        }
+        if ($this->enemySR) {
+            $sql .= " AND enemyTeamElo= ? \n";
+            array_push($params, $this->enemySR);
+        }
+        
+        $readGame = $this->pdo->prepare($sql);
+        $readGame->execute($params);
+        
+       return $readGame->fetch();        
+    }
+    
+    /* Create a game given the primary key information. Return the gameID of the game with these criteria
+     *      1. Validate required information +
+     *      2. Check if game exists already
+     *      3. Create/Get gameID
+     * 
+     * return assoc array of correlating row created, false otherwise
+     */
+    public function create() {
+        
         /* Create the player if they don't exist 
          * 
          * TODO: make this not necessary
@@ -44,36 +84,60 @@ class Game extends Resource {
                 . ", pro= ? ;\n";
 
         $writePlayer = $this->pdo->prepare($sql);
-        $writePlayer->execute([$player, 0]);
+        $writePlayer->execute(array($this->player, 0));
 
         /* Check for previously created games */
-        $readGameResult = $this->read($resource, $fields);
+        $readGameResult = $this->read();
         
         if ($readGameResult) {
+            // The game already exists, mission accomplished
             return $readGameResult;
         }
         else {
-            /* TODO: Handle optional params */
+            /* There is not a game with these params already 
+             * TODO: Handle optional params 
+             */
+            
+            $params = [];
             $sql = " INSERT INTO overwatch.game\n"
-                    . " SET date = STR_TO_DATE( ? , '%m/%d/%Y'),"
-                    . " player = ? \n"
-                    . " AND playerElo= ? \n"
-                    . " AND teamElo= ? \n"
-                    . " AND enemyTeamElo= ? ;\n";
+                    . " SET ";
             
-            $writeGame = $this->pdo->prepare($sql);
-            /* TODO: is this blocking? It needs to otherwise the last read will return stupid values. */
-            $writeGame->execute([$date, $player, $playerSR, $teamSR, $enemySR]);
+            if ($this->player) {
+                $sql .= " player= ? ,";
+                array_push($params, $this->player);
+            }
+            if ($this->date) {
+                $sql .= " date= STR_TO_DATE( ? , '%m/%d/%Y') ,";
+                array_push($params, $this->date);
+            }
+            if ($this->playerSR) {
+                $sql .= " playerElo= ? ,";
+                array_push($params, $this->playerSR);
+            }
+            if ($this->teamSR) {
+                $sql .= " teamElo= ? ,";
+                array_push($params, $this->teamSR);
+            }
+            if ($this->enemySR) {
+                $sql .= " enemyTeamElo= ? ,";
+                array_push($params, $this->enemySR);
+            }
             
-            return $this->read($resource, $fields);
+            // Strip the last comma from the query
+            $writeGame = $this->pdo->prepare(substr($sql, 0, -1));
+            
+            $writeGame->execute($params);
+            
+            // TODO: don't read again, jfc.
+            return $this->read();
         }
     }  
     
-    public function update($resource, $fields) {
+    public function update() {
         return false;
     }
     
-    public function delete($resource, $fields) {
+    public function delete() {
         return false;
     }
 }

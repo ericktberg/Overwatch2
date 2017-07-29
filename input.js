@@ -354,14 +354,15 @@ function initInput(container) {
      *  Also, 
      */
     var saveGameData = function (e) {
+        console.log(saveGameData.lastID);
         if (saveGameData.lastID) {
             var url = "index.php";
             var playerPos,
                 enemyPos;
             var positionData;
-            playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
-            enemyPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posX')});
-            //console.log(playerPos);
+            
+            playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posY')});
+            enemyPos = quadrantCoords({x: clicked.lastRect.attr('posX'), y: clicked.lastRect.attr('posY')});
 
             positionData = [{name: 'gameID', value: saveGameData.lastID},
                             {name: 'playerX', value: playerPos.x},
@@ -369,16 +370,15 @@ function initInput(container) {
                             {name: 'playerZ', value: playerPos.z},
                             {name: 'enemyX', value: enemyPos.x},
                             {name: 'enemyY', value: enemyPos.y},
-                            {name: 'enemyZ', value: enemyPos.z}];
-
-            var formData = $(this).serializeObject();
-            formData['resource'] = 'gamedata';
+                            {name: 'enemyZ', value: enemyPos.z}];            
+            var formData = $(this).serializeArray().concat(positionData);
+            formData.push({name: 'resource', value: 'gamedata'});
+            
             
             $.ajax({
                 type: "POST",
-                contentType: "application/json",
                 url: url,
-                data: JSON.stringify(formData)
+                data: formData
             }).done(function(response) { 
                 console.log(response); 
             });
@@ -404,26 +404,21 @@ function initInput(container) {
      */
     var saveGame = function(e) {
         var url = "index.php";
-        var data = $(this).serialize();
-        console.log(data);
-        var formData = $(this).serializeObject();
-        var sendIt = {};
-        sendIt['resource'] = 'game';
-        sendIt['fields'] = formData;
+        var formData = $(this).serializeArray();
+                        
+        formData.push({name: 'resource', value: 'game'});
                 
         $.ajax({
             type: "POST",
             url: url,
-            data: JSON.stringify(sendIt)
+            data: formData
         }).done(function(response) { 
             console.log(response);
             response = JSON.parse(response);
             // TODO: handle fail cases +
-            if (response.lastID !== 0 && typeof response.lastID === 'number') {
-                
-                saveGameData.lastID = response.lastID;
-            }
-            
+            if (response.gameID !== 0 && typeof response.gameID === 'number') {   
+                saveGameData.lastID = response.gameID;
+            } 
         });
 
         e.preventDefault();
@@ -447,9 +442,11 @@ function initInput(container) {
  * Code snippet from https://css-tricks.com/snippets/jquery/serialize-form-to-json/
  * @returns object
  */
-$.fn.serializeObject = function() {
+$.fn.serializeObject = function(extraData = []) {
     var o = {};
     var a = this.serializeArray();
+    a = a.concat(extraData);
+    console.log(a);
     
     $.each(a, function(index, element) {
         if(o[element.name]) {
@@ -482,7 +479,7 @@ $.fn.serializeObject = function() {
  * @returns {undefined}
  */
 function quadrantCoords(original) {
-    original.z = 0;
+    original.z = 1;
     return original;
 }
 
