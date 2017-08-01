@@ -9,6 +9,8 @@ and open the template in the editor.
 */
 
 
+
+
 .required:after { content: " *"; }
 
 #vizContent {
@@ -60,6 +62,6 @@ button {
     cursor: pointer;
 }
 
-button:hover, button.active {
+button:hover, button.active, #menuButton:hover {
     opacity: 1;
 }

@@ -361,6 +361,8 @@ function initInput(container) {
                 enemyPos;
             var positionData;
             
+            
+            
             playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posY')});
             enemyPos = quadrantCoords({x: clicked.lastRect.attr('posX'), y: clicked.lastRect.attr('posY')});
 
@@ -405,6 +407,8 @@ function initInput(container) {
     var saveGame = function(e) {
         var url = "index.php";
         var formData = $(this).serializeArray();
+                        
+        console.log($(this).children("input[name=player]").val());
                         
         formData.push({name: 'resource', value: 'game'});
                 

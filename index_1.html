@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Overwatched</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+        <script type="text/javascript" src="https://d3js.org/topojson.v1.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+
+
+        <link rel="stylesheet" href="index_1.css">
+        <link rel="stylesheet" href="globalnav_1.css">
+    <body>
+        <div class="site-wrapper">
+            <div class="nav-wrapper">
+                <header id="PrimaryNav" role="banner">
+                    <nav>
+                        <div class="nav-menu-wrapper">
+                            <div class="nav-menu-content">
+                                <ul class="nav-menu">
+                                    <li class="nav-menu-item" id="Maps">
+                                        <p class="nav-menu-label" role="button" onclick="toggleSidebar()">></p>
+                                    </li>
+                                    <li class="nav-menu-item" id="Maps">
+                                        <p class="nav-menu-label">Maps</p>
+                                        <ul class="nav-submenu">
+                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-input')">Input</p></li>
+                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-point')">Points</p></li>
+                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-hexagon')">Hexagons</p></li>
+                                        </ul>
+                                    </li>
+                                    <li class="nav-menu-item" id="Graphs">
+                                        <p class="nav-menu-label">Graphs</p>
+                                        <ul class="nav-submenu">
+                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-aggregate')">Aggregate</p></li>
+                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-input')">Inbred</p></li>
+                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-input')">Star Wars</p></li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </nav>
+                </header>
+            </div>
+
+            <div id="MainBody">
+                <div class="context-overlay-wrapper">
+                    <div id="ContextMenu" class="side-menu is-open">
+                        <div class="context-content context-input is-active">
+                            
+                        </div>
+                    </div>
+                    <div id="Overlay">
+                        
+                    </div>
+                </div>
+                <svg id="Viz"></svg>
+            </div>    
+        </div>
+    </body>
+</html>

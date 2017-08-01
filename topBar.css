@@ -11,7 +11,7 @@ and open the template in the editor.
 #topBar {
     background-color: orange;
     width: 100%;
-    height: 5%;
+    height: 50px;
     transition:.3s;
 }
 
@@ -24,17 +24,52 @@ and open the template in the editor.
     padding: 15px 15px 15px 15px;
     
 }
-#topBar button:hover, #topBar button.active {
+
+#menuButton {
+    box-sizing: border-box;
+    float: left;
+    height: 50px;
+    position: relative;
+    opacity: .5;
+    padding: 15px 15px 15px 15px;
+    margin: 0px 5px 0px 0px;
+    transition: all .3s ease-in-out;
+}
+
+.bar {
+    width: 25px;
+    height: 3px;
+    background-color: whitesmoke;
+    margin: 3px 0;
+    transition: 0.4s;
+}
+
+#menuButton:hover .bar {
+    background-color: orange;
+}
+
+.dropdown-content {
+    display: block;
+    position: fixed;
+    top:50px;
+    left: 600px;
+    height: 200px;
+    width: 150px;
+    z-index:4;
+    background-color: orange;
+} 
+
+#topBar button:hover, #topBar button.active, #menuButton:hover, #menuButton.active {
     background-color: white;
     color: orange;
 }
-#mapsButton.open, #graphsButton.open {
+#mapsButton.open, #graphsButton.open, #menuButton.open {
     transform: translate(401px, 0);
 }
 
 #sideBar {
     padding: 10px 10px 10px 10px;
-    top: 5%;
+    top: 50px;
     height: 95%;
     width: 380px;
     left: -410px;

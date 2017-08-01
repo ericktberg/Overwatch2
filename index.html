@@ -51,8 +51,15 @@ and open the template in the editor.
         <div id="topBar" class="open">
             
             <!--Maps, graphs, and user buttons here-->
-            <button id="mapsButton" class="active open" onclick="toggleSideBar()">Maps</button>
+            <div id="menuButton" class="open" onclick="toggleSideBar()">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+            </div>
+            <button id="mapsButton" class="active open">Maps</button>
             <button id="graphsButton" class="open" onclick="">Graphs</button>
+            <div id="mapDropdown" class="dropdown-content"></div>
+            <div id="Dropdown" class="dropdown-content"></div>
         </div>
         <div id="vizContent">
             <!--Visualization content goes here-->

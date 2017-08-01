@@ -20,6 +20,8 @@ var INFO = false;
  * @type type
  */
 $(document).ready(function () {
+    alert("fuck you jesus");
+    
     drawEnvironment(d3.select("#vizContent"));
     
     /**************** TAG: not a global element **************/
@@ -84,11 +86,7 @@ function displayModal(id) {
 function floatModal(id) {
     // The modal background of transparent gray is only displayed when hovering over the modal
     // This gives feedback to user that the background is interactable.
-    $('#modals').css({display: 'block', 'pointer-events': 'none', 'background-color': 'rgba(0,0,0,0)'}).unbind('hover').hover(function () {
-        $(this).css({'background-color': 'rgba(0,0,0,.3)'});
-    }, function () {
-        $(this).css({'background-color': 'rgba(0,0,0,0)'});
-    });
+    $('#modals').css({display: 'block', 'pointer-events': 'none', 'background-color': 'rgba(0,0,0,0)'});
     $('#modals').children().css({display: 'none'});
     // Reduce opacity of modal itself when it is being hovered over
     $(id).css({display: 'block', 'pointer-events': 'auto'}).unbind('hover').hover(function () {
@@ -112,6 +110,7 @@ function toggleSideBar() {
     $('#mapsButton').toggleClass("open");
     $('#graphsButton').toggleClass("open");
     $('#sideBar').toggleClass("open");
+    $('#menuButton').toggleClass("open");
 }
 
 var characters = [
