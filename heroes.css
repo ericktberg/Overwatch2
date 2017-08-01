@@ -10,27 +10,27 @@
 
 .Genji {
     fill: #B6EF13;
-    stroke: black;
+    box-shadow: inset 0px 0px 20px 10px black;
 }
 
 .McCree {
     fill: #c23f46;
-    stroke: #795c42;
+    box-shadow: 0px 0px 20px 10px #795c42;
 }
 
 .Pharah {
     fill: #1f73c3;
-    stroke: #494949;
+    box-shadow: inset 0px 0px 20px 10px #494949;
 }
 
 .Reaper {
     fill: #333333;
-    stroke: #d9cca9;
+    box-shadow: inset 0px 0px 20px 10px #d9cca9;
 }
 
 .Soldier {
     fill: #525d9b;
-    stroke: #d53231;
+    box-shadow: inset 0px 0px 20px 10px #d53231;
 }
 
 .Sombra {

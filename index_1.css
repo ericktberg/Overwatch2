@@ -3,6 +3,15 @@ html {
     height: 100%;
     width: 100%;
     font-size: 100%;
+    box-sizing: border-box;
+}
+
+*, *:before, *:after {
+    box-sizing: inherit;
+}
+
+ul {
+    list-style: none;
 }
 
 body, div, header, html, nav, ul {
@@ -72,24 +81,125 @@ svg#Viz {
 
 #ContextMenu {
     height: 100%;
-    width: 400px;
+    width: 500px;
     background-color: white;
     z-index: 2;
+    box-shadow: 0px 0px 5px rgba(0,0,0,.1);
+}
+
+#ContextMenu > div {
+    position: absolute;
 }
 
 #MainBody .side-menu {
     position: absolute;
-    left: -400px;
+    left: -500px;
 }
 
 #MainBody .side-menu.is-open {
-    left: 0px;
+    transform: translate(500px, 0);
 }
 
-.context-overlay-wrapper .context-content {
+.context-overlay-wrapper .contextual {
     display: none;
 }
 
 .context-overlay-wrapper .is-active {
     display: flex;
+}
+
+#ContextMenu .contextual {
+    width: 100%;
+    height: 100%;
+}
+
+#SelectGame {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+#SelectGame > * {
+    display: flex;
+}
+
+#SelectGame > li {
+    padding: 15px;
+}
+
+#SelectGame .form-item, #ContextMenu .form-item {
+    margin: 10px 0;
+}
+
+#SelectGame .form-item > input, #ContextMenu .form-item > input, select {
+    width: 90%;
+}
+
+#SelectGame .select-filter {
+    color: orange; 
+}
+
+#SelectGame .select-content {
+    background-color: white;
+    
+    width: 300px;
+    height: 100%;
+}
+
+#SelectGame .select-items {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    overflow: scroll;
+    overflow-x:hidden;
+}
+
+#SelectGame .select-item {
+    margin: 5px 5px;
+    display: flex;
+}
+
+#SelectGame .select-item > button {
+    width: 150px;
+    height: 100px;
+    background-color: #f9edea;
+    border-radius: 10px;
+    border: none;
+
+    font-size: 5em;
+    font-weight: 800;
+    color: #fba;
+    text-shadow: 0px 0px 2px rgba(0,0,0, .1);
+    
+}
+
+#SelectGame .select-item > button:active { 
+    background-color:  #fba;
+    color: #f9edea;
+}
+
+
+
+#CreateGame {
+    position: absolute;
+    z-index: 3;
+    width: 96%;
+    color: orange;
+    background-color: white;
+    padding: 15px;
+    height: 100%;
+    box-shadow: 0px 0px 5px rgba(0,0,0,.1);
+}
+
+.hanamura {
+    background-image: url(images/HanamuraThumb.png);
+}
+
+hr.vertical {
+    width: 1px;
+    height: 95%;
+    color: orange;
+    background-color: orange;
+    border: none;
 }

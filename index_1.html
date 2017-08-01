@@ -13,35 +13,36 @@ and open the template in the editor.
         <script type="text/javascript" src="https://d3js.org/topojson.v1.min.js"></script>
         <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
         <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-
+        <script type="text/javascript" src="index_1.js"></script>
 
         <link rel="stylesheet" href="index_1.css">
+        <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
         <link rel="stylesheet" href="globalnav_1.css">
     <body>
         <div class="site-wrapper">
             <div class="nav-wrapper">
                 <header id="PrimaryNav" role="banner">
-                    <nav>
+                    <nav class="">
                         <div class="nav-menu-wrapper">
                             <div class="nav-menu-content">
                                 <ul class="nav-menu">
-                                    <li class="nav-menu-item" id="Maps">
-                                        <p class="nav-menu-label" role="button" onclick="toggleSidebar()">></p>
+                                    <li class="nav-menu-item" id="sidebar" onclick="ContextMenu.toggle()">
+                                        <p class="nav-menu-label" role="button"><</p>
                                     </li>
                                     <li class="nav-menu-item" id="Maps">
                                         <p class="nav-menu-label">Maps</p>
                                         <ul class="nav-submenu">
-                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-input')">Input</p></li>
-                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-point')">Points</p></li>
-                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-hexagon')">Hexagons</p></li>
+                                            <li class="nav-submenu-item"><a href="#input/" role="button">Input</a></li>
+                                            <li class="nav-submenu-item"><a href="#point/" role="button">Points</a></li>
+                                            <li class="nav-submenu-item"><a href="#hexmap/" role="button">Hexagons</a></li>
                                         </ul>
                                     </li>
                                     <li class="nav-menu-item" id="Graphs">
                                         <p class="nav-menu-label">Graphs</p>
                                         <ul class="nav-submenu">
-                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-aggregate')">Aggregate</p></li>
-                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-input')">Inbred</p></li>
-                                            <li class="nav-submenu-item"><p role="button" onclick="mapContext('context-input')">Star Wars</p></li>
+                                            <li class="nav-submenu-item"><a role="button">Aggregate</a></li>
+                                            <li class="nav-submenu-item"><a role="button">Inbred</a></li>
+                                            <li class="nav-submenu-item"><a role="button">Star Wars</a></li>
                                         </ul>
                                     </li>
                                 </ul>
@@ -53,9 +54,99 @@ and open the template in the editor.
 
             <div id="MainBody">
                 <div class="context-overlay-wrapper">
-                    <div id="ContextMenu" class="side-menu is-open">
-                        <div class="context-content context-input is-active">
+                    <div id="ContextMenu" class="side-menu">
+                        <div class="contextual context-input context-point context-hex">
+                            <ul id="SelectGame">
+                                <li class="select-filter">
+                                    <!--TODO: make this a selection! use ranges rather than values-->
+                                    <form>
+                                        <ul class="form-items">
+                                            <li class="form-item">
+                                                Player: 
+                                                <input type="text" name="player">
+                                            </li>
+                                            <li class="form-item">
+                                                Date: <input class="datepicker" type="text" name="date">
+                                            </li>
+                                            <li class="form-item">
+                                                Map: <select name="map">
+                                                    <option value="All">All</option>
+                                                    <option value="Hanamura">Hanamura</option>
+                                                </select>
+                                            </li>
+                                            <li class="form-item">
+                                                Player SR: <input type="number" name="playerSR" min="1" max="5000">
+                                            </li>
+                                            <li class="form-item">
+                                                Team SR: <input type="number" name="teamSR" min="1" max="5000">
+                                            </li>
+                                            <li class="form-item">
+                                                Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000">
+                                            </li>
+                                            <li class="form-item">
+                                                Video Url: <input type="text" name="videoURL">
+                                            </li>
+                                            <li class="form-item">
+                                                <button>Submit</button>
+                                            </li>
+                                            <li class="form-item">
+                                                <button type="button">Reset Fields</button>
+                                            </li>
+                                        </ul>
+                                    </form>
+                                </li>
+                                <li>
+                                    <hr class="vertical">
+                                </li>
+                                <li class="select-content">
+                                    <ul class="select-items">
+                                        <li class="select-item">
+                                            <button onclick="CreateGame.toggle()">+</button>
+                                        </li>
+                                        <li class="select-item">
+                                            <button class="select-game hanamura"></button>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <!--If another submenu like this is needed, refactor to generically open a second side-menu (.sidemenu .sidemenu {... )-->
                             
+                        </div>
+                        <div id="CreateGame" class="side-menu">
+                            <form method="post">
+                                <ul class="form-items">
+                                    <li class="form-item">
+                                        Player: 
+                                        <input type="text" name="player" required> *
+                                    </li>
+                                    <li class="form-item">
+                                        Date: <br><input class="datepicker" type="text" name="date" required> *
+                                    </li>
+                                    <li class="form-item">
+                                        Map: <br><select name="map" required>
+                                            <option value="Hanamura">Hanamura</option>
+                                        </select> *
+                                    </li>
+                                    <li class="form-item">
+                                        Player SR: <input type="number" name="playerSR" min="1" max="5000" required> *
+                                    </li>
+                                    <li class="form-item">
+                                        Team SR: <input type="number" name="teamSR" min="1" max="5000" required> *
+                                    </li>
+                                    <li class="form-item">
+                                        Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000" required> *
+                                    </li>
+                                    <li class="form-item">
+                                        Video Url: <input type="text" name="videoURL">
+                                    </li>
+                                    <li class="form-item">
+                                        <input type="submit" name="Submit">
+                                    </li>
+                                    <li class="form-item">
+                                        <button type="button" onclick="CreateGame.toggle()">Cancel</button>
+                                    </li>
+                                </ul>
+                            </form>
                         </div>
                     </div>
                     <div id="Overlay">
