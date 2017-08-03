@@ -12,14 +12,19 @@
 
 var INFO = false;
 
-
-var CreateGame = {
-    toggle: function() { $('#CreateGame').toggleClass('is-open'); }
+var CreateGameMenu = {
+    open: function() { $('#CreateGameMenu').addClass('is-open'); },
+    close: function() { $('#CreateGameMenu').removeClass('is-open'); }
 };
 
-var ContextMenu = {
-    toggle: function() { 
-        $('#PrimaryNav > nav, #ContextMenu').toggleClass('is-open'); 
+var ContextWindow = {
+    open: function() { 
+        console.log('open');
+        $('#PrimaryNav > nav, #MainBody > * > .side-menu').addClass('is-open'); 
+    },
+    toggle: function () {
+        console.log('toggle');
+        $('#PrimaryNav > nav, #MainBody > * > .side-menu').toggleClass('is-open');
     }
 };
 
@@ -32,6 +37,9 @@ var ContextMenu = {
 $(document).ready(function () {    
     // Setup all datepickers on load.
     $(".datepicker").datepicker();
+    
+    $("#CreateGameMenu > form").submit(CreateGame);
+    $(".select-game").click(LoadGame)
     
     
     var url = decodeURI(window.location.hash);
@@ -46,19 +54,15 @@ $(window).on('hashchange', function() {
         render(url);
 });
 
-/* Display the input view.
- * 
- * @returns {undefined}
- */
-function inputView() {
-    $('.context-input').addClass('is-active');
-}
+
 
 function pointView() {
+    ContextWindow.open();
     $('.context-point').addClass('is-active');
 }
 
 function hexView() {
+    ContextWindow.open();
     $('.context-hex').addClass('is-active');
 }
 
@@ -82,7 +86,7 @@ function render(url) {
 
         '#point': pointView,
         
-        '#hexmap': 0
+        '#hexmap': hexView
     };
     
     if(map[pagename]) {
@@ -94,13 +98,49 @@ function render(url) {
     
 }
 
+function drawMap(svg, map) {
+    var container = svg.append("g").attr("class", "container");
+    
+     var zoom = d3.zoom()
+            .scaleExtent([.5, 5])
+            .on("zoom", function() { container.attr("transform", d3.event.transform); });
+    svg.call(zoom);
 
+    
+    // Each map has 4 levels
+    var basement = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + 0 + ")");
+    var ground = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + 0 + ")");
+    var one = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + map.height + ")");
+    var two = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + map.height + ")");
 
-/* Open up the sidebar and adjust nav-bar accordingly
- */
-function toggleSidebar() {
-    $('#PrimaryNav > nav, #MainBody .side-menu').toggleClass('is-open');
+    basement.append("svg:image")
+        .attr("height", map.height)
+        .attr("width", map.width)
+        .attr("xlink:href",map.basement);
+
+    ground.append("svg:image")
+        .attr("height", map.height)
+        .attr("width", map.width)
+        .attr("xlink:href",map.ground);
+
+    one.append("svg:image")
+        .attr("height", map.height)
+        .attr("width", map.width)
+        .attr("xlink:href",map.one);
+
+    two.append("svg:image")
+        .attr("height", map.height)
+        .attr("width", map.width)
+        .attr("xlink:href",map.two);
+
+    return container;
 }
+
+
+var map_ = "Hanamura";
+var maps_d = {
+    "Hanamura": {basement: "images/Hanamura_neg1.jpg", ground: "images/Hanamura_0.jpg", one: "images/Hanamura_1.jpg", two: "images/Hanamura_2.jpg", width: 793, height: 800}
+};
 
 var characters = [
 	{name: "Genji", class: "attack", lmb: "Shurikens", rmb: "Shuriken Fan", ability1: "Dash", ability2: "Deflect", ult: "Dragonblade"},

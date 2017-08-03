@@ -1,0 +1,112 @@
+
+#MainBody .context-wrapper {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* The MainBody has 
+    1. a side menu with cascading submenus
+    2. a visual section taking most of the body
+    3. an overlay that provides interaction elements for the visual section
+ */
+#MainBody .side-menu {
+    position: absolute;
+    height: 100%;
+    width: 500px;
+    left: -500px;
+    z-index: 2;
+    box-shadow: 0px 0px 5px rgba(0,0,0,.1);
+    background-color: white;
+    color: orange;
+}
+
+#MainBody .side-menu .side-menu {
+    z-index: 3;
+    width: 96%;
+}
+
+#MainBody .side-menu.is-open {
+    transform: translate(500px, 0);
+}
+
+#CreateGameMenu {
+    color: orange;
+    background-color: white;
+    padding: 15px;
+}
+
+.context-wrapper .contextual {
+    display: none;
+}
+
+.context-wrapper .is-active {
+    display: flex;
+}
+
+#MainBody div.contextual {
+    width: 100%;
+    height: 100%;
+}
+
+
+/* A default graphical selection
+ */
+.select-items {
+    display: flex;
+    flex-direction: column;
+}
+
+.select-item {
+    margin: 5px 5px;
+    display: flex;
+}
+
+/* Menu used to select games from a list of games. 
+    Has filter section then a list section.
+*/
+#SelectGameMenu {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+}
+
+#SelectGameMenu > li {
+    display: flex;
+    padding: 15px;
+}
+
+#SelectGameMenu .select-content {
+    width: 300px;
+    height: 100%;
+}
+
+#SelectGameMenu .select-items {
+    margin: 0 auto;
+    overflow: scroll;
+    overflow-x:hidden;
+}
+
+#SelectGameMenu .select-item > button {
+    width: 150px;
+    height: 100px;
+    
+    border-radius: 10px;
+
+    font-size: 5em;
+    font-weight: 800;
+    
+    color: #fba;
+    background-color: #f9edea;
+}
+
+#SelectGameMenu .select-item > button:hover { 
+    background-color:  #fba;
+    color: #f9edea;
+}
+
+#SelectGameMenu .select-item > button:active { 
+    background-color:  #fba;
+    color: #f9edea;
+}
