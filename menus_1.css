@@ -1,7 +1,34 @@
 
-#MainBody .context-wrapper {
+.context-wrapper {
     width: 100%;
     height: 100%;
+}
+
+.modal-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 4;
+    
+    pointer-events: none;
+}
+
+.modal-wrapper.is-active {
+    pointer-events: auto;
+}
+
+.modal {
+    display: none;
+}
+
+.modal.is-active {
+    display: block;
+}
+
+#HeroSelect svg {
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,.4);
 }
 
 
@@ -10,7 +37,7 @@
     2. a visual section taking most of the body
     3. an overlay that provides interaction elements for the visual section
  */
-#MainBody .side-menu {
+.content-wrapper .side-menu {
     position: absolute;
     height: 100%;
     width: 500px;
@@ -21,12 +48,12 @@
     color: orange;
 }
 
-#MainBody .side-menu .side-menu {
+.content-wrapper .side-menu .side-menu {
     z-index: 3;
     width: 96%;
 }
 
-#MainBody .side-menu.is-open {
+.content-wrapper .side-menu.is-open {
     transform: translate(500px, 0);
 }
 
@@ -44,7 +71,7 @@
     display: flex;
 }
 
-#MainBody div.contextual {
+.content-wrapper div.contextual {
     width: 100%;
     height: 100%;
 }

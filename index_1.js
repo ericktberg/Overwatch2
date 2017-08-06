@@ -10,139 +10,189 @@
 
 /* global d3 */
 
-var INFO = false;
+var OVERWATCH = {}
 
-var CreateGameMenu = {
-    open: function() { $('#CreateGameMenu').addClass('is-open'); },
-    close: function() { $('#CreateGameMenu').removeClass('is-open'); }
-};
+OVERWATCH.index = (function() {
+    var INFO = false;
 
-var ContextWindow = {
-    open: function() { 
-        console.log('open');
-        $('#PrimaryNav > nav, #MainBody > * > .side-menu').addClass('is-open'); 
-    },
-    toggle: function () {
-        console.log('toggle');
-        $('#PrimaryNav > nav, #MainBody > * > .side-menu').toggleClass('is-open');
-    }
-};
+    
 
-/*  When window loads, display default content
- *  Set behaviors and fill-in data for DOM elements
- *      TODO: DOM elements that are not being referenced can be filled in when they become relevant
- * 
- * @type type
- */
-$(document).ready(function () {    
-    // Setup all datepickers on load.
-    $(".datepicker").datepicker();
+    /*  When window loads, display default content
+     *  Set behaviors and fill-in data for DOM elements
+     *      TODO: DOM elements that are not being referenced can be filled in when they become relevant
+     * 
+     * @type type
+     */
+    $(document).ready(function () {    
+        // Setup all datepickers on load.
+        $(".datepicker").datepicker();
+        
+        var url = decodeURI(window.location.hash);
+        OVERWATCH.state.render(url);
+    });
     
-    $("#CreateGameMenu > form").submit(CreateGame);
-    $(".select-game").click(LoadGame)
-    
-    
-    var url = decodeURI(window.location.hash);
-    
-    render(url);
-    
-});
-
-$(window).on('hashchange', function() {
+    /* To create a stateful single page application, when the url changes we have to rerender the page
+     * This should be run on both document ready and whenever the hash changes
+     * 
+     * <a> tags will change hash URIs only
+     */
+    $(window).on('hashchange', function() {
         var url = decodeURI(window.location.hash);
         
-        render(url);
-});
+        OVERWATCH.state.render(url);
+    });
 
-
-
-function pointView() {
-    ContextWindow.open();
-    $('.context-point').addClass('is-active');
-}
-
-function hexView() {
-    ContextWindow.open();
-    $('.context-hex').addClass('is-active');
-}
-
-/* Decide which page to show then render that page.
- * This is a single page application, so the page is entirely based on the hash url
- * 
- * @param {type} url
- * @returns {undefined}
- */
-function render(url) {
-    var pagename = url.split('/')[0];
-    
-    // Remove active contexts
-    $('.is-active').removeClass('is-active');
-    
-    var map = {
-        // Homepage function
-        '': 0,
+    // Public members of OVERWATCH.index
+    return {
         
-        '#input': inputView,
-
-        '#point': pointView,
+        CreateGameMenu: {
+            open: function() { $('#CreateGameMenu').addClass('is-open'); },
+            close: function() { $('#CreateGameMenu').removeClass('is-open'); }
+        },
         
-        '#hexmap': hexView
+        ContextWindow: {
+            open: function(side) { 
+                console.log('open');
+                $('#PrimaryNav > nav, .side-menu.' + side).addClass('is-open'); 
+            },
+            toggle: function (side) {
+                console.log('toggle');
+                $('#PrimaryNav > nav, .side-menu.' + side).toggleClass('is-open');
+            }
+        }
+
+    };
+})();
+
+OVERWATCH.state = (function() {
+    var viewHandle = {};
+    
+    return {
+        render: function(url) {
+            var pagename = url.split('/')[0];
+
+            
+            // Remove active contexts
+            $('.is-active').removeClass('is-active');
+            // Remove any data currently rendered
+
+            console.log(viewHandle.cleanup);
+            if (viewHandle.cleanup) {
+                viewHandle.cleanup();
+            }
+
+            var map = {
+                // Homepage function
+                '': 0,
+
+                '#input': OVERWATCH.input.view,
+
+                '#point': OVERWATCH.point.view,
+
+                '#hexmap': OVERWATCH.hex.view
+            };
+
+            if(map[pagename]) {
+                viewHandle = map[pagename]() || {};
+            }
+            else {
+                renderErrorPage();
+            }
+        }
+    };
+})();
+
+
+OVERWATCH.point = (function() {
+    return {
+        view: function() {
+            OVERWATCH.index.ContextWindow.open('left');
+            $('.context-point').addClass('is-active');
+            OVERWATCH.modal.open('HeroSelect');
+        }
+    }
+})();
+
+OVERWATCH.hex = (function() {
+    return {
+        view: function() {
+            OVERWATCH.index.ContextWindow.open('left');
+            $('.context-hex').addClass('is-active');
+        }
+    }
+})();
+
+
+
+
+
+
+OVERWATCH.maps = (function() {
+    var currentMap = "Hanamura";
+    
+    var list = {
+        "Hanamura": {basement: "images/Hanamura_neg1.jpg", ground: "images/Hanamura_0.jpg", one: "images/Hanamura_1.jpg", two: "images/Hanamura_2.jpg", width: 793, height: 800}
     };
     
-    if(map[pagename]) {
-        map[pagename]();
+    
+
+    return {
+        'currentMap': function() {
+            return currentMap;
+        },
+        
+        'currentMapData': function() {
+            return list[currentMap];
+        },
+        
+        'draw' : function(svg) {
+            var container = svg.append("g").attr("class", "container");
+            var map = list[currentMap];
+            console.log(map);
+            var zoom = d3.zoom()
+                    .scaleExtent([.5, 5])
+                    .on("zoom", function() { container.attr("transform", d3.event.transform); });
+            svg.call(zoom);
+
+
+            // Each map has 4 levels
+            var basement = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + 0 + ")");
+            var ground = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + 0 + ")");
+            var one = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + map.height + ")");
+            var two = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + map.height + ")");
+
+            basement.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.basement);
+
+            ground.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.ground);
+
+            one.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.one);
+
+            two.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.two);
+
+            return container;
+        },
+        
+        updateMap: function(newMap) {
+            currentMap = newMap;
+        }
     }
-    else {
-        renderErrorPage();
-    }
-    
-}
-
-function drawMap(svg, map) {
-    var container = svg.append("g").attr("class", "container");
-    
-     var zoom = d3.zoom()
-            .scaleExtent([.5, 5])
-            .on("zoom", function() { container.attr("transform", d3.event.transform); });
-    svg.call(zoom);
-
-    
-    // Each map has 4 levels
-    var basement = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + 0 + ")");
-    var ground = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + 0 + ")");
-    var one = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + map.height + ")");
-    var two = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + map.height + ")");
-
-    basement.append("svg:image")
-        .attr("height", map.height)
-        .attr("width", map.width)
-        .attr("xlink:href",map.basement);
-
-    ground.append("svg:image")
-        .attr("height", map.height)
-        .attr("width", map.width)
-        .attr("xlink:href",map.ground);
-
-    one.append("svg:image")
-        .attr("height", map.height)
-        .attr("width", map.width)
-        .attr("xlink:href",map.one);
-
-    two.append("svg:image")
-        .attr("height", map.height)
-        .attr("width", map.width)
-        .attr("xlink:href",map.two);
-
-    return container;
-}
+})();
 
 
-var map_ = "Hanamura";
-var maps_d = {
-    "Hanamura": {basement: "images/Hanamura_neg1.jpg", ground: "images/Hanamura_0.jpg", one: "images/Hanamura_1.jpg", two: "images/Hanamura_2.jpg", width: 793, height: 800}
-};
-
-var characters = [
+OVERWATCH.heroes = (function() {
+    var list = [
 	{name: "Genji", class: "attack", lmb: "Shurikens", rmb: "Shuriken Fan", ability1: "Dash", ability2: "Deflect", ult: "Dragonblade"},
 	{name: "McCree", class: "attack", lmb: "Peacekeeper", rmb: "Fan the Hammer",  ability1: "Flashbang", ult: "Deadeye"},
 	{name: "Pharah", class: "attack", lmb: "Rocket", ability1: "Concussion Blast", ult: "Rocket Barrage"},
@@ -167,4 +217,21 @@ var characters = [
 	{name: "Mercy", class: "support", lmb: "lol, rekt"},
 	{name: "Symmetra", class: "support", lmb: "Photon Beam", rmb: "Photon Projector", ability1: "Photon Turret"},
 	{name: "Zenyatta", class: "support", lmb: "Orb of Destruction", rmb: "Orb Volley"}
-];
+    ];
+    
+    return {
+        'list': list,
+        'attack': list.filter(function(d) {
+            return d.class === "attack";
+        }),
+        'defense': list.filter(function(d) {
+            return d.class === "defense";
+        }),
+        'tank': list.filter(function(d) {
+            return d.class === "tank";
+        }),
+        'support': list.filter(function(d) {
+            return d.class === "support";
+        })
+    }
+})();

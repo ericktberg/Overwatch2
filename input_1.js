@@ -1,4 +1,4 @@
-/* global map_, d3, INFO, characters, ContextWindow *** declared in map.js */
+/* global d3, OVERWATCH */
 
 /*******************************************************************************
  * 
@@ -48,7 +48,7 @@
  *          Holding ? in addition to the rest will allow the user to scrub the canvas
  *          
  *  3. Once the second element is created, a menu appears in the center of the screen.
- *          The menu displays the two previously selected characters
+ *          The menu displays the two previously selected OVERWATCH.heroes.
  *          Other relevant factors are also available for selection. Any that rely on others, are greyed out until the requisites are fulfilled
  *          Moving focus outside of this menu turns it very transparent and allows interaction with map and elements below.
  *              ? If element is created in center of canvas, what should the workflow be to move it?
@@ -59,44 +59,233 @@
  * 
  ******************************************************************************/
 
-/* The hero select menu is a variant of a radial menu.
- * 
- * It has a center and four quadrants surrounding the center
- * Each quadrant represents a class
- * 
- * Elements are placed in their corresponding quadrant in a radial pattern
- * The center of the circle the radial pattern is translated to begin within each quadrant
- * 
- * @param {object} c : the center of the hero select. Will be subject to some limitations in practice
- */
 
-/* Display the input view
- * 
- * 
- * @returns {undefined}
- */
-function inputView() {
-    ContextWindow.open();
+OVERWATCH.input = (function() {
+    var container = null;
     
-    $('.context-input').addClass('is-active');
+    var lastCircle = null,
+        lastRect = null;
+        
+    var lastClick = null;
     
+    var heroSelect = null;
     
+    var transformX = null, 
+        transformY = null;
+        
+    $(document).ready(function () {
+        $("#CreateGameMenu > form").submit(CreateGame);
+        $(".select-game").click(LoadGame);
+        heroSelect = OVERWATCH.radialQuadrantMenu.create;
+        heroSelect.init(d3.select('#HeroSelect > svg'), 
+                        OVERWATCH.heroes.attack, 
+                        OVERWATCH.heroes.defense, 
+                        OVERWATCH.heroes.support, 
+                        OVERWATCH.heroes.tank);
+                        
+       
+    });
     
-}
+    /* Cleanup the input function. 
+     *  1. Reset any form parameters +
+     *  2. Empty the svg we used
+     * 
+     * @returns {undefined}
+     */
+    function cleanup() {
+        console.log("Cleaning input");
+        $("#MainViz").empty();
+    }
+    
+   
+    
+    /* Determine what the next click will produce based on the previous shape created and validated
+     * 
+     * @param {type} transformX
+     * @param {type} transformY
+     * @returns {undefined}
+     */
+    function createSprite(transformX, transformY, hero) {
+        var newObject = null;
+         
+        if (lastClick === null || lastClick === 'rect') {
+            // This is either the first element created, or the previous element was the enemy
+            // Either way, create a player icon.
+            lastClick = 'circle';
+            newObject = container.append("circle")
+                    .attr("r", 7.5)
+                    .attr("transform", "translate(" + transformX + "," + transformY + ")");
+            
+            // Assign the player hero in form
+            console.log("Created Circle");
+        }
+        else if (lastClick === 'circle') {
+            /* When the rectangle is created and selected, the pair has been completed.
+            * Open the form menu to save the pair to database.
+            * 
+            * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
+            */
+            lastClick = 'rect';
+            newObject = container.append("rect")    
+                    .attr("height", 10)
+                    .attr("width", 10)
+                    .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
+            
+            // Assign the enemy hero in form
+            console.log("Created Rectangle");
+        }
+        
+        /* On start, move to front, increase size and stroke and do the same to its sibling + 
+         */
+        function dragged() {
+           d3.select(this).attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
+        }
+        /* Assign the shared properties of the objects created
+         * 
+         */
+        newObject.call(d3.drag().on("drag", dragged))
+                .attr("class", hero)
+                .attr("posX", transformX)
+                .attr("posY", transformY)
+                .on("contextmenu", function() { d3.event.preventDefault(); });
+        
+        return newObject;
+    }
+    
+    /* The driver for interaction. Once the game has been created or loaded, this will be assigned to container
+     * 
+     *      1. Clicking on the map creates a sprite with a hero selection option that pops up
+     *      2. Creating two sprites (a pair) brings up a data creation form
+     *      
+     *  Sprites can be interacted with
+     * 
+     */
+    function clicked() {
+        var mouse = d3.event,
+            transform = container.attr("transform");
+        transformX = mouse.layerX;
+        transformY = mouse.layerY;
+    
+        console.log("Container clicked");
+        
+        if (transform) {
+            transform = getTransformation(transform);
+            // Transform data to have 1:1 correspondence with svg
+            transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
+            transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
+        }
+        
+        heroSelect.moveTo(transformX, transformY);
+        OVERWATCH.modal.open('HeroSelect');
+        
+        $('#HeroSelect .select-item').unbind("click").click(function() {
+            createSprite(transformX, transformY, $(this).attr("name"));
+        });
+        
+    }
+    
+    /* Creating a game takes data from the form containing the submitted button
+     * It will save to the "game" object
+     * 
+     * If the game saves properly, create the input interface with corresponding parameters
+     * 
+     * @param {type} e
+     * @returns {undefined}
+     */
+    function CreateGame(e) {
+        e.preventDefault();
 
-function CreateGame(e) {
-    e.preventDefault();
-    
-    console.log("Game Created");
-    var svg = d3.select("#Viz > svg");
-    
-    drawMap(svg, maps_d[map_]);
-}
+        var url = "index.php";
+        var formData = $(this).serializeArray();
+        
+        console.log("Creating Game");
+        
+        formData.push({name: 'resource', value: 'game'});
+        
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: formData
+        }).done(function(response) {
+            // Check for success +
+            
+            // Initialize the interface
+            var svg = d3.select("#MainViz");
+            container = OVERWATCH.maps.draw(svg);
+            container.on("click", clicked);
+            
+        })
+    }
 
-function LoadGame() {
-    console.log("Game Loaded");
+    /* Loading a game is essentially like Creating a game but without the creation step.
+     * The buttons will have data associated with them that has been established from the database
+     * Take this data and create an interface from it.
+     * 
+     * Calls to get the data from this game will be necessary to populate from previous uses.
+     * 
+     * @returns {undefined}
+     */
+    function LoadGame() {
+        console.log("Game Loaded");
+
+        var svg = d3.select("#MainViz");
+
+        OVERWATCH.maps.draw(svg);
+    }
     
-    var svg = d3.select("#Viz > svg");
     
-    drawMap(svg, maps_d[map_]);
-}
+    
+    
+    /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
+     * 
+     * Take a d3 transform and return a legible javascript object
+     */
+    function getTransformation(transform) {
+        // Create a dummy g for calculation purposes only. This will never
+        // be appended to the DOM and will be discarded once this function 
+        // returns.
+        var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        // Set the transform attribute to the provided string value.
+        g.setAttributeNS(null, "transform", transform);
+
+        // consolidate the SVGTransformList containing all transformations
+        // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
+        // its SVGMatrix. 
+        var matrix = g.transform.baseVal.consolidate().matrix;
+
+        // Below calculations are taken and adapted from the private function
+        // transform/decompose.js of D3's module d3-interpolate.
+        var {a, b, c, d, e, f} = matrix;   // ES6, if this doesn't work, use below assignment
+        // var a=matrix.a, b=matrix.b, c=matrix.c, d=matrix.d, e=matrix.e, f=matrix.f; // ES5
+        var scaleX, scaleY, skewX;
+        if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
+        if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
+        if (scaleY = Math.sqrt(c * c + d * d)) c /= scaleY, d /= scaleY, skewX /= scaleY;
+        if (a * d < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
+        return {
+            translateX: e,
+            translateY: f,
+            rotate: Math.atan2(b, a) * 180 / Math.PI,
+            skewX: Math.atan(skewX) * 180 / Math.PI,
+            scaleX: scaleX,
+            scaleY: scaleY
+        };
+    }
+    
+    return {
+        /* Display the input view
+        */
+        view: function() {
+            OVERWATCH.index.ContextWindow.open('left');
+    
+            $('.context-input').addClass('is-active');
+            
+            console.log(cleanup);
+            return {cleanup: cleanup};
+        }
+    }
+})();
+
+
+

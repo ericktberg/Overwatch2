@@ -305,14 +305,7 @@ function initInput(container) {
                     clicked.lastRect = newObject;
                 }
                    
-                /* Objects created have shared properties
-                 *      
-                 * Drag:
-                 *      - On start, move to front, increase size and stroke and do the same to its sibling + 
-                 */
-                function dragged() {
-                    d3.select(this).attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
-                }
+                
                 
                 if (newObject) {
                     newObject.attr("class", hero)

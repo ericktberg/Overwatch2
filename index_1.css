@@ -46,7 +46,7 @@ div {
     flex-flow: column;
 }
 
-#MainBody {
+.content-wrapper {
     display: flex;
     flex: 1 1 auto;
     
@@ -54,18 +54,18 @@ div {
     height: 100%;
 }
 
-#MainBody * {
+.content-wrapper * {
     z-index: 1;
 }
 
-#Viz {
+.viz-wrapper {
     height: 100%;
     width: 100%;
     position: absolute;
     z-index: 0;
 }
 
-#Viz svg {
+svg#MainViz {
     position: absolute;
     height: 100%;
     width: 100%;
