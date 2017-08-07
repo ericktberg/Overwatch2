@@ -1,4 +1,4 @@
-/* global map_, d3, INFO, characters *** declared in map.js */
+/* global d3, OVERWATCH */
 
 /*******************************************************************************
  * 
@@ -48,7 +48,7 @@
  *          Holding ? in addition to the rest will allow the user to scrub the canvas
  *          
  *  3. Once the second element is created, a menu appears in the center of the screen.
- *          The menu displays the two previously selected characters
+ *          The menu displays the two previously selected OVERWATCH.heroes.
  *          Other relevant factors are also available for selection. Any that rely on others, are greyed out until the requisites are fulfilled
  *          Moving focus outside of this menu turns it very transparent and allows interaction with map and elements below.
  *              ? If element is created in center of canvas, what should the workflow be to move it?
@@ -59,277 +59,258 @@
  * 
  ******************************************************************************/
 
-/* The hero select menu is a variant of a radial menu.
- * 
- * It has a center and four quadrants surrounding the center
- * Each quadrant represents a class
- * 
- * Elements are placed in their corresponding quadrant in a radial pattern
- * The center of the circle the radial pattern is translated to begin within each quadrant
- * 
- * @param {object} c : the center of the hero select. Will be subject to some limitations in practice
- */
-function heroSelect(c) {
-    var svg = d3.select("#heroSelect");
+
+OVERWATCH.input = (function() {
+    var container = null;
     
-    var attack = characters.filter(function(d) {
-        return d.class === "attack";
+    var lastCircle = null,
+        lastRect = null;
+        
+    var lastClick = null;
+    
+    var heroSelect = null;
+    
+    var transformX = null, 
+        transformY = null;
+        
+    $(document).ready(function () {
+        // Create game submission will create a game, load it into view, and close menus associated with game selection
+        $("#CreateGameMenu > form").submit(CreateGame);
+        
+        // The buttons for selecting a game will load it into menu
+        $(".select-game").click(LoadGame);
+        
+        // Initialize the hero select menu
+        heroSelect = OVERWATCH.radialQuadrantMenu.create;
+        heroSelect.init(d3.select('#HeroSelect > svg'), 
+                        OVERWATCH.heroes.attack, 
+                        OVERWATCH.heroes.defense, 
+                        OVERWATCH.heroes.support, 
+                        OVERWATCH.heroes.tank);
+                        
+       
     });
-    var defense = characters.filter(function(d) {
-        return d.class === 'defense';
-    });
-    var tank = characters.filter(function(d) {
-        return d.class === 'tank';
-    });
-    var support = characters.filter(function(d) {
-        return d.class === 'support';
-    });
     
-    var heroClick = function() { console.log($(this).addClass("selected")); };
-    var heroHover = function() { $(this).css("opacity", ".9"); };
-    var heroUnHover = function() { $(this).css("opacity", ".4"); };
-    
-    createQuadrant(svg, 1, heroClick, heroHover, heroUnHover, attack, 30, c);
-    createQuadrant(svg, 2, heroClick, heroHover, heroUnHover, defense, 30, c);
-    createQuadrant(svg, 3, heroClick, heroHover, heroUnHover, support, 30, c);
-    createQuadrant(svg, 4, heroClick, heroHover, heroUnHover, tank, 30, c);
-}
-
-/* Create row of a radial menu, populated with circles of desired radius.
-* Class the created elements according to data[name]
-*/
-var createRow = function(svg, clicked, hovered, mouseOut, rowNumb, circleRadius, center, quadrant, data) {
-    var circlesInRow = 2*rowNumb;
-
-    var i,
-        degrees = Math.PI/(2*circlesInRow-2),
-        distance = rowNumb*circleRadius*2.2;
-
-    for (i = 0; i < circlesInRow && i < data.length; i++) {
-        svg.append("circle")
-            .attr("r", circleRadius)
-            .attr("transform", "translate(" + (center.x + quadrant.x*Math.cos(i*degrees)*distance) + "," + (center.y + quadrant.y*Math.sin(i*degrees)*distance) + ")")
-            .attr("class", "menu " + data[i].name)
-            .style("opacity", ".4")
-            .attr("name", data[i].name)
-            .on("mouseover", hovered)
-            .on("mouseout", mouseOut)
-            .on("click", clicked);
-    }
-};
-
-/* Fill out an entire quadrant
-* Compute the number of rows needed on the fly and partially fill the last.
-* Data dependent on how many elements are created and what the result will look like
-* 
-* TODO: Algorithm can currently only handle 3 rows without overlapping circles.
-*/
-var createQuadrant = function(svg, quadNum, clicked, hovered, mouseOut, data, radius, center) {
-    var quadrant = [{x: -1, y: -1}, {x: 1, y: -1}, {x: -1, y: 1}, {x: 1, y: 1}][quadNum - 1];
-    
-    var numOfRows = 0;
-    var elementsLeft = data.length;
-    var c = {x: center.x + quadrant.x*(radius*2.5)/2, y: center.y + quadrant.y*(radius*2.5)/2};
-
-    svg.append("circle")
-            .attr("r", radius)
-            .attr("transform", "translate(" + c.x + "," + c.y + ")")
-            .attr("class", "menu " + data[0].name)
-            .attr("name", data[0].name)
-            .style("opacity", ".4")
-            .on("mouseover", hovered)
-            .on("mouseout", mouseOut)
-            .on("click", clicked);
-    elementsLeft--;
-    
-    data = data.slice(1);
-
-    while(elementsLeft > 0) {
-        createRow(svg, clicked, hovered, mouseOut, ++numOfRows, radius, c, quadrant, data);
-        data = data.slice(2*numOfRows);
-        elementsLeft = elementsLeft -  2*numOfRows;
-    }
-};
-
-/* One of the important form elements is a 'method' of elimination
- * This depends on both what hero is being used, and whether it is an elimination or a death
- * 
- * Check the mode then check what hero is being used. 
- * Use this information to populate the elimination mode select dropdown. 
- * 
- * TODO: OPTIMIZATION: This is called on every change to the form, not just the relevant ones.
- * TODO: This should also be called on initialization of the list.
- *          Default values for radio buttons
- */
-function elimMethodChange() {
-    var mode,
-        hero,
-        methodList = [],
-        field,
-        character;
-            
-    // Remove any previous selections
-    $('#methodSelect').empty();
-            
-    mode = $('input[name=mode]:checked', '#inputForm').val(); 
-    if (mode === 'Death') {
-        hero = $('#enemyHero').find(":selected").text();
-    } 
-    else { // Is an Assist or Elimination, either way it takes player data
-        hero = $('#playerHero').find(":selected").text();
-    }
-    
-    // Given the hero name, we can create the method list from the characters object
-    character = characters.filter(function(d) { return d.name === hero; })[0];
-    for (field in character) {
-        switch (field) {
-            case 'lmb':
-            case 'rmb':
-            case 'ability1':
-            case 'ability2':
-                methodList.push(character[field]);
-                break;
-            default:
-        }
-    }
-
-    fillSelect('#methodSelect', methodList)
-}
-
-/* 
- * Initialize all html elements that pertain to input
- * 
- * Check if Sidebar is popped out the sidebar and populate it
- * 
- * @param {type} container : a d3 "g" element that will contain all future svg elements
- * @returns {undefined}
- */
-function initInput(container) {
-    // Check sidebar +
-    
-    // Populate sidebar +
-
-    $('#inputForm').change(elimMethodChange);
-    
-    
-    /* A user clicks on the map
-     *      1. create an svg element at location
-     *      2. Open a mandatory dialog box to select hero
-     *      3. Populate the creation form with hero appropriate hero data
-     *      4. Once both heroes have been selected open the data creation form
+    /* Cleanup the input function. 
+     *  1. Reset any form parameters +
+     *  2. Empty the svg we used
+     * 
+     * @returns {undefined}
      */
-    var clicked = function() {
-        // Variables containing click information
-        var mouse = d3.event,
-            transform = container.attr("transform"), 
-            transformX = mouse.layerX,
-            transformY = mouse.layerY;
-
-        var newObject;
-        var hero;
-        // When the submission form is open, no new data can be created
-        if (!clicked.formOpen) {
-            if (transform) {
-                transform = getTransformation(transform);
-                // Transform data to have 1:1 correspondence with svg
-                transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
-                transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
-            }
-
-            if (INFO) {
-                console.log("[INFO] " + "transformX: " + transformX + " transformY: " + transformY);
-            }
-
-            /* Create a modal to force user to fill out dialog
-             *      - Moving cursor off the modal will turn the modal transparent to view beneath. +
-             *      - The only way to close the modal is by accepting or denying it 
-             *      
-             * Modal interaction options:
-             *      1. If the user enters valid values, and accepts them, populate the svg
-             *      2. If the user does not enter valid values and accepts, point out errors: keep modal open +
-             *      3. If the user cancels the modal, do not populate the svg.
-             *      
-             *  Break the modal down after use
-             */
-            heroSelect({x: mouse.layerX, y: mouse.layerY});
-
-            displayModal('#heroSelect');
-
-            $('#heroSelect').find('.menu').unbind('click').click(function() {
-                // A hero has been selected. Which one is it?       
-                // Remove the selected status for the next selection.
-                hero = $('#heroSelect').find(".selected").attr("name");
-                $('#heroSelect').find(".selected").removeClass("selected");
-                /* Determine what the next click will produce based on the previous shape created and validated
-                 * 
-                 * Each shape created will be both clickable and hoverable +
-                 * 
-                 * On click: 
-                 *      - Re-open the modal and allow values to be changed. +
-                 *      - Show the matching pair +
-                 * On Hover: 
-                */
-                if (typeof clicked.lastClick === 'undefined' || clicked.lastClick === 'rect') {
-                    // This is either the first element created, or the previous element was the enemy
-                    // Either way, create a player icon.
-                    clicked.lastClick = 'circle';
-                    newObject = container.append("circle")
-                            .attr("r", 7.5)
-                            .attr("transform", "translate(" + transformX + "," + transformY + ")")
-                            ;
-                    // Select the player hero value in the form to come
-                    $('#playerHero option[value="' + hero + '"]').prop('selected', true);
-                    
-                    closeModal('#heroSelect');
-                    clicked.lastCircle = newObject;
-                }
-                /* When the rectangle is created and selected, the pair has been completed.
-                 * Open the form menu to save the pair to database.
-                 * 
-                 * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
-                 */
-                else if (clicked.lastClick === 'circle') {
-                    clicked.lastClick = 'rect';
-                    newObject = container.append("rect")    
-                            .attr("height", 10)
-                            .attr("width", 10)
-                            .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
-                    // Select the enemy hero value in the form to come
-                    $('#enemyHero option[value="' + hero + '"]').prop('selected', true);
-                    
-                    elimMethodChange();
-                    // Opening a new modal will automatically close out of the previous modal
-                    floatModal('#inputForm');
-
-                    clicked.formOpen = true;
-                    clicked.lastRect = newObject;
-                }
-                   
-                
-                
-                if (newObject) {
-                    newObject.attr("class", hero)
-                            .call(d3.drag().on("drag", dragged))
-                            .attr("posX", transformX)
-                            .attr("posY", transformY)
-                            .on('contextmenu', function() { d3.event.preventDefault(); });
-                }
-                // Now that the menu has been used, delete all of the created menu elements for recreation on the next click
-                $('#heroSelect').empty();
-            });    
-
-            /* The way to cancel the form submission is by clicking anywhere else in the document
-             * heroSelect is the svg containing the menu. It spans the whole page and is on top. Clicking it will cancel the menu.
-             */
-            $('#heroSelect').unbind('click').click(function(event) {
-                if (event.target === $('#heroSelect')[0]) {
-                    closeModal('#heroSelect');
-                    // Now that the menu has been used, delete all of the created menu elements for recreation on the next click
-                    $("#heroSelect").empty();
-                }
-            });
+    function cleanup() {
+        console.log("Cleaning input");
+        $("#MainViz").empty();
+    }
+    
+   
+    
+    /* Determine what the next click will produce based on the previous shape created and validated
+     * 
+     * @param {type} transformX
+     * @param {type} transformY
+     * @returns {undefined}
+     */
+    function createSprite(transformX, transformY, hero) {
+        var newObject = null;
+         
+        if (lastClick === null || lastClick === 'rect') {
+            // This is either the first element created, or the previous element was the enemy
+            // Either way, create a player icon.
+            lastClick = 'circle';
+            newObject = container.append("circle")
+                    .attr("r", 7.5)
+                    .attr("transform", "translate(" + transformX + "," + transformY + ")");
+            
+            // Assign the player hero in form
+            console.log("Created Circle");
         }
-    };
+        else if (lastClick === 'circle') {
+            /* When the rectangle is created and selected, the pair has been completed.
+            * Open the form menu to save the pair to database.
+            * 
+            * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
+            */
+            lastClick = 'rect';
+            newObject = container.append("rect")    
+                    .attr("height", 10)
+                    .attr("width", 10)
+                    .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
+            
+            // Assign the enemy hero in form
+            console.log("Created Rectangle");
+        }
+        
+        /* On start, move to front, increase size and stroke and do the same to its sibling + 
+         */
+        function dragged() {
+           d3.select(this).attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
+        }
+        /* Assign the shared properties of the objects created
+         * 
+         */
+        newObject.call(d3.drag().on("drag", dragged))
+                .attr("class", hero)
+                .on("contextmenu", function() { d3.event.preventDefault(); });
+        
+        return newObject;
+    }
+    
+    /* The driver for interaction. Once the game has been created or loaded, this will be assigned to container
+     * 
+     *      1. Clicking on the map creates a sprite with a hero selection option that pops up
+     *      2. Creating two sprites (a pair) brings up a data creation form
+     *      
+     *  Sprites can be interacted with
+     * 
+     */
+    function clicked() {
+        var mouse = d3.event,
+            transform = container.attr("transform");
+        transformX = mouse.layerX;
+        transformY = mouse.layerY;
+    
+        console.log("Container clicked");
+        
+        if (transform) {
+            transform = getTransformation(transform);
+            // Transform data to have 1:1 correspondence with svg
+            transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
+            transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
+        }
+        
+        heroSelect.moveTo(transformX, transformY);
+        OVERWATCH.modal.open('HeroSelect');
+        
+        $('#HeroSelect .select-item').unbind("click").click(function() {
+            createSprite(transformX, transformY, $(this).attr("name"));
+        });
+        
+    }
+    
+    /* Remove any existing svg elements and draw
+     * 
+     * @returns {undefined}
+     */
+    function drawViz() {
+        $("#MainViz").empty();
+        var svg = d3.select("#MainViz");
+        container = OVERWATCH.maps.draw(svg);
+        container.on("click", clicked);
+    }
+    
+    /* Creating a game takes data from the form containing the submitted button
+     * It will save to the "game" object
+     * 
+     * If the game saves properly, create the input interface with corresponding parameters
+     * 
+     * @param {type} e
+     * @returns {undefined}
+     */
+    function CreateGame(e) {
+        e.preventDefault();
+
+        var url = "index.php";
+        var formData = $(this).serializeArray();
+        console.log(formData);
+        console.log("Creating Game");
+        
+        formData.push({name: 'resource', value: 'game'});
+        
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: formData
+        }).done(function(response) {
+            // Check for success +
+            var map = JSON.parse(response)['map'];
+            if (map) {
+                // Set params
+                OVERWATCH.maps.setMap(map);
+
+                // Initialize the interface
+                drawViz();
+
+                OVERWATCH.index.CreateGameMenu.close();
+                OVERWATCH.index.ContextWindow.close('left');
+            }
+            
+            
+        });
+    }
+
+    /* Loading a game is essentially like Creating a game but without the creation step.
+     * The buttons will have data associated with them that has been established from the database
+     * Take this data and create an interface from it.
+     * 
+     * Calls to get the data from this game will be necessary to populate from previous uses.
+     * 
+     * @returns {undefined}
+     */
+    function LoadGame() {        
+        console.log("Game Loaded");
+
+        var svg = d3.select("#MainViz");
+
+        OVERWATCH.maps.draw(svg);
+    }
+    
+    
+    
+    
+    /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
+     * 
+     * Take a d3 transform and return a legible javascript object
+     */
+    function getTransformation(transform) {
+        // Create a dummy g for calculation purposes only. This will never
+        // be appended to the DOM and will be discarded once this function 
+        // returns.
+        var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+        // Set the transform attribute to the provided string value.
+        g.setAttributeNS(null, "transform", transform);
+
+        // consolidate the SVGTransformList containing all transformations
+        // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
+        // its SVGMatrix. 
+        var matrix = g.transform.baseVal.consolidate().matrix;
+
+        // Below calculations are taken and adapted from the private function
+        // transform/decompose.js of D3's module d3-interpolate.
+        var {a, b, c, d, e, f} = matrix;   // ES6, if this doesn't work, use below assignment
+        // var a=matrix.a, b=matrix.b, c=matrix.c, d=matrix.d, e=matrix.e, f=matrix.f; // ES5
+        var scaleX, scaleY, skewX;
+        if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
+        if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
+        if (scaleY = Math.sqrt(c * c + d * d)) c /= scaleY, d /= scaleY, skewX /= scaleY;
+        if (a * d < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
+        return {
+            translateX: e,
+            translateY: f,
+            rotate: Math.atan2(b, a) * 180 / Math.PI,
+            skewX: Math.atan(skewX) * 180 / Math.PI,
+            scaleX: scaleX,
+            scaleY: scaleY
+        };
+    }
+    
+    return {
+        /* Display the input view
+        */
+        view: function() {
+            OVERWATCH.index.ContextWindow.open('left');
+    
+            $('.context-input').addClass('is-active');
+            
+            console.log(cleanup);
+            return {cleanup: cleanup};
+        }
+    }
+})();
+
+
+
+
 
     /* Submit the input form for the pair
      * 
@@ -389,141 +370,3 @@ function initInput(container) {
         }
         e.preventDefault(); 
     };
-    
-    $('#gamedata').submit(saveGameData);
-    
-    /* Game meta data save handler
-     * 
-     * Send the save request and receive a response containing the gameID of the newly created Game
-     * Use this to provide the foreign key in gameDataSave
-     */
-    var saveGame = function(e) {
-        var url = "index.php";
-        var formData = $(this).serializeArray();
-                        
-        console.log($(this).children("input[name=player]").val());
-                        
-        formData.push({name: 'resource', value: 'game'});
-                
-        $.ajax({
-            type: "POST",
-            url: url,
-            data: formData
-        }).done(function(response) { 
-            console.log(response);
-            response = JSON.parse(response);
-            // TODO: handle fail cases +
-            if (response.gameID !== 0 && typeof response.gameID === 'number') {   
-                saveGameData.lastID = response.gameID;
-            } 
-        });
-
-        e.preventDefault();
-    };
-    
-    $("#gameSave").submit(saveGame);
-    
-    $('#playerHero').change(function() { 
-        clicked.lastCircle.attr('class', $(this).find(':selected').text());
-    });
-    $('#enemyHero').change(function() { 
-        clicked.lastRect.attr('class', $(this).find(':selected').text());
-    });
-    
-    container.on("click", clicked);
-};
-
-/* Create correct JSON from a form.
- * Eliminate any empty fields.
- * 
- * Code snippet from https://css-tricks.com/snippets/jquery/serialize-form-to-json/
- * @returns object
- */
-$.fn.serializeObject = function(extraData = []) {
-    var o = {};
-    var a = this.serializeArray();
-    a = a.concat(extraData);
-    console.log(a);
-    
-    $.each(a, function(index, element) {
-        if(o[element.name]) {
-            // Field is already in object. 
-            if (!o[element.name].push) {
-                // The element is not an array yet
-                o[element.name] = [o[element.name]];
-            }
-            // Push the value
-            if (element.value) {
-                o[element.name].push(element.value);
-            }
-        }
-        else {
-            if (element.value) {
-                o[element.name] = element.value;
-            }        
-        }
-    });
-    
-    return o;
-};
-
-/* All maps are split into quadrants
- * Based on the map image specifications and the transform coordinates from the svg, determine the individual map positions
- * 
- * TODO: Do I even need to do this?
- * 
- * @param {type} original
- * @returns {undefined}
- */
-function quadrantCoords(original) {
-    original.z = 1;
-    return original;
-}
-
-/* Remove interactability with an element.
- * Lower opacity to provide users with feedback
- * 
- * @param {type} element
- * @returns {undefined}
- */
-function fixElement(element) {
-    element.on('mousedown.drag', null)
-            .on('contextmenu', function() { d3.event.preventDefault(); })
-            .style('opacity', '.5');
-}
-/* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
- * 
- * Take a d3 transform and return a legible javascript object
- */
-function getTransformation(transform) {
-  // Create a dummy g for calculation purposes only. This will never
-  // be appended to the DOM and will be discarded once this function 
-  // returns.
-  var g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  
-  // Set the transform attribute to the provided string value.
-  g.setAttributeNS(null, "transform", transform);
-  
-  // consolidate the SVGTransformList containing all transformations
-  // to a single SVGTransform of type SVG_TRANSFORM_MATRIX and get
-  // its SVGMatrix. 
-  var matrix = g.transform.baseVal.consolidate().matrix;
-  
-  // Below calculations are taken and adapted from the private function
-  // transform/decompose.js of D3's module d3-interpolate.
-  var {a, b, c, d, e, f} = matrix;   // ES6, if this doesn't work, use below assignment
-  // var a=matrix.a, b=matrix.b, c=matrix.c, d=matrix.d, e=matrix.e, f=matrix.f; // ES5
-  var scaleX, scaleY, skewX;
-  if (scaleX = Math.sqrt(a * a + b * b)) a /= scaleX, b /= scaleX;
-  if (skewX = a * c + b * d) c -= a * skewX, d -= b * skewX;
-  if (scaleY = Math.sqrt(c * c + d * d)) c /= scaleY, d /= scaleY, skewX /= scaleY;
-  if (a * d < b * c) a = -a, b = -b, skewX = -skewX, scaleX = -scaleX;
-  return {
-    translateX: e,
-    translateY: f,
-    rotate: Math.atan2(b, a) * 180 / Math.PI,
-    skewX: Math.atan(skewX) * 180 / Math.PI,
-    scaleX: scaleX,
-    scaleY: scaleY
-  };
-}

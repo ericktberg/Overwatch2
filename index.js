@@ -10,110 +10,193 @@
 
 /* global d3 */
 
-var INFO = false;
+var OVERWATCH = {}
 
+OVERWATCH.index = (function() {
+    var INFO = false;
 
-/*  When window loads, display default content
- *  Set behaviors and fill-in data for DOM elements
- *      TODO: DOM elements that are not being referenced can be filled in when they become relevant
- * 
- * @type type
- */
-$(document).ready(function () {
-    alert("fuck you jesus");
-    
-    drawEnvironment(d3.select("#vizContent"));
-    
-    /**************** TAG: not a global element **************/
-    $("#datepicker").datepicker();
-    
-    /**************** TAG: not a global element **************/
-    fillSelect("#playerHero", characters.map(function(d) { return d.name; }));
-    fillSelect("#enemyHero", characters.map(function(d) { return d.name; }));
     
 
-});
-
-
-
-// Maps button
-// On hover, display 
-function mapButton() {
-    
-}
-
-// Graph button
-function graphButton() {
-    
-}
-
-/* Fill a select element with options with value and text given by a dataset.
- * 
- * @param {type} id : The id of the select in jquery format. 
- * @param {type} data : An array of values
- */
-function fillSelect(id, data) {
-    var list = $(id)[0];
-    
-    $.each(data, function(i, val) {
-        list.options[list.options.length] = new Option(val, val);
+    /*  When window loads, display default content
+     *  Set behaviors and fill-in data for DOM elements
+     *      TODO: DOM elements that are not being referenced can be filled in when they become relevant
+     * 
+     * @type type
+     */
+    $(document).ready(function () {    
+        // Setup all datepickers on load.
+        $(".datepicker").datepicker();
+        
+        var url = decodeURI(window.location.hash);
+        OVERWATCH.state.render(url);
     });
-}
-
-/* Display an arbitrary modal. 
- * 
- * All other modals are closed out
- * Then the appropriate modal and the modals object is displayed
- * 
- * To animate a fade out, first display, then animate opacity
- */
-function displayModal(id) {
-    $('#modals').css({display: 'block', 'pointer-events': 'auto', 'background-color': 'rgba(0,0,0,.3)'});
-    $('#modals').children().css({display: 'none'});
-    $(id).css({display: 'block'});
-}
-
-/* A floated modal allows interaction with the background on 
- * 
- * When hovering over the modal, display at full opacity +
- * When hovering away from modal display the background and reduce opacity of modal +
- * 
- * This needs an obvious creation animation, otherwise it can be hard to see when the cursor isn't hovered over it automatically +
- * 
- * @param {type} id
- * @returns {undefined}
- */
-function floatModal(id) {
-    // The modal background of transparent gray is only displayed when hovering over the modal
-    // This gives feedback to user that the background is interactable.
-    $('#modals').css({display: 'block', 'pointer-events': 'none', 'background-color': 'rgba(0,0,0,0)'});
-    $('#modals').children().css({display: 'none'});
-    // Reduce opacity of modal itself when it is being hovered over
-    $(id).css({display: 'block', 'pointer-events': 'auto'}).unbind('hover').hover(function () {
-        $(this).css({opacity: .9});
-    }, function () {
-        $(this).css({opacity: .3});
+    
+    /* To create a stateful single page application, when the url changes we have to rerender the page
+     * This should be run on both document ready and whenever the hash changes
+     * 
+     * <a> tags will change hash URIs only
+     */
+    $(window).on('hashchange', function() {
+        var url = decodeURI(window.location.hash);
+        
+        OVERWATCH.state.render(url);
     });
-}
 
-/* Close a modal.
- * 
- * To animate fade out, animate opacity then stop displaying
- */
-function closeModal(id) {
-    $('#modals').css({display: 'none'});
-    $(id).css({display: 'none'});
-}
-// A sidebar pops out for use in some visualizations.
-// TopBar buttons are effected by sidebar positioning
-function toggleSideBar() {
-    $('#mapsButton').toggleClass("open");
-    $('#graphsButton').toggleClass("open");
-    $('#sideBar').toggleClass("open");
-    $('#menuButton').toggleClass("open");
-}
+    // Public members of OVERWATCH.index
+    return {
+        
+        CreateGameMenu: {
+            open: function() { $('#CreateGameMenu').addClass('is-open'); },
+            close: function() { $('#CreateGameMenu').removeClass('is-open'); }
+        },
+        
+        ContextWindow: {
+            open: function(side) { 
+                $('#PrimaryNav > nav, .side-menu.' + side).addClass('is-open'); 
+            },
+            close: function(side) { 
+                $('#PrimaryNav > nav, .side-menu.' + side).removeClass('is-open'); 
+            },
+            toggle: function (side) {
+                $('#PrimaryNav > nav, .side-menu.' + side).toggleClass('is-open');
+            }
+        }
 
-var characters = [
+    };
+})();
+
+OVERWATCH.state = (function() {
+    var viewHandle = {};
+    
+    return {
+        render: function(url) {
+            var pagename = url.split('/')[0];
+
+            
+            // Remove active contexts
+            $('.is-active').removeClass('is-active');
+            // Remove any data currently rendered
+
+            console.log(viewHandle.cleanup);
+            if (viewHandle.cleanup) {
+                viewHandle.cleanup();
+            }
+
+            var map = {
+                // Homepage function
+                '': 0,
+
+                '#input': OVERWATCH.input.view,
+
+                '#point': OVERWATCH.point.view,
+
+                '#hexmap': OVERWATCH.hex.view
+            };
+
+            if(map[pagename]) {
+                viewHandle = map[pagename]() || {};
+            }
+            else {
+                renderErrorPage();
+            }
+        }
+    };
+})();
+
+
+OVERWATCH.point = (function() {
+    return {
+        view: function() {
+            OVERWATCH.index.ContextWindow.open('left');
+            $('.context-point').addClass('is-active');
+            OVERWATCH.modal.open('HeroSelect');
+        }
+    }
+})();
+
+OVERWATCH.hex = (function() {
+    return {
+        view: function() {
+            OVERWATCH.index.ContextWindow.open('left');
+            $('.context-hex').addClass('is-active');
+        }
+    }
+})();
+
+
+
+
+
+
+OVERWATCH.maps = (function() {
+    var currentMap = "";
+    
+    var list = {
+        "Hanamura": {basement: "images/Hanamura_neg1.jpg", ground: "images/Hanamura_0.jpg", one: "images/Hanamura_1.jpg", two: "images/Hanamura_2.jpg", width: 793, height: 800}
+    };
+    
+    
+
+    return {
+        /* svg - a d3 selection of an existing svg
+         * 
+         * Create a container and append all 4 levels of a map.
+         */
+        'draw' : function(svg) {
+            var container = svg.append("g").attr("class", "container");
+            var map = list[currentMap];
+
+            if (!map) {
+                console.log("map is not set");
+                return null;
+            }
+            var zoom = d3.zoom()
+                    .scaleExtent([.5, 5])
+                    .on("zoom", function() { container.attr("transform", d3.event.transform); });
+            svg.call(zoom);
+
+
+            // Each map has 4 levels
+            var basement = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + 0 + ")");
+            var ground = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + 0 + ")");
+            var one = container.append("g").attr("class", "floor").attr("transform", "translate(" + 0 + "," + map.height + ")");
+            var two = container.append("g").attr("class", "floor").attr("transform", "translate(" + map.width + "," + map.height + ")");
+
+            basement.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.basement);
+
+            ground.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.ground);
+
+            one.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.one);
+
+            two.append("svg:image")
+                .attr("height", map.height)
+                .attr("width", map.width)
+                .attr("xlink:href",map.two);
+
+            return container;
+        },
+        /* Map state is controlled inside this lambda.
+         * 
+         * Setter function for the current map
+         */
+        setMap: function(newMap) {
+            currentMap = newMap;
+        }
+    };
+})();
+
+
+OVERWATCH.heroes = (function() {
+    var list = [
 	{name: "Genji", class: "attack", lmb: "Shurikens", rmb: "Shuriken Fan", ability1: "Dash", ability2: "Deflect", ult: "Dragonblade"},
 	{name: "McCree", class: "attack", lmb: "Peacekeeper", rmb: "Fan the Hammer",  ability1: "Flashbang", ult: "Deadeye"},
 	{name: "Pharah", class: "attack", lmb: "Rocket", ability1: "Concussion Blast", ult: "Rocket Barrage"},
@@ -138,4 +221,21 @@ var characters = [
 	{name: "Mercy", class: "support", lmb: "lol, rekt"},
 	{name: "Symmetra", class: "support", lmb: "Photon Beam", rmb: "Photon Projector", ability1: "Photon Turret"},
 	{name: "Zenyatta", class: "support", lmb: "Orb of Destruction", rmb: "Orb Volley"}
-];
+    ];
+    
+    return {
+        'list': list,
+        'attack': list.filter(function(d) {
+            return d.class === "attack";
+        }),
+        'defense': list.filter(function(d) {
+            return d.class === "defense";
+        }),
+        'tank': list.filter(function(d) {
+            return d.class === "tank";
+        }),
+        'support': list.filter(function(d) {
+            return d.class === "support";
+        })
+    }
+})();

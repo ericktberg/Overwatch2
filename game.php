@@ -14,6 +14,7 @@ class Game extends Resource {
     private $teamSR;
     private $enemySR;
     private $videoURL;
+    private $map;
 
     public function getFields($input) {
         $this->gameID = filter_input($input, "gameID");
@@ -23,6 +24,7 @@ class Game extends Resource {
         $this->teamSR = filter_input($input, "teamSR");
         $this->enemySR = filter_input($input, "enemySR");
         $this->videoURL = filter_input($input, "videoURL");
+        $this->map = filter_input($input, "map");
     }
     
     /* Basic read function of CRUD. 
@@ -31,7 +33,7 @@ class Game extends Resource {
      */
     public function read() {
         $params = []; 
-        $sql = " SELECT gameID, player, date, playerElo, teamElo, enemyTeamElo, videoURL "
+        $sql = " SELECT gameID, player, date, map, playerElo, teamElo, enemyTeamElo, videoURL "
                 . " FROM overwatch.game\n"
                 . " WHERE 1=1 ";
         
@@ -58,6 +60,10 @@ class Game extends Resource {
         if ($this->enemySR) {
             $sql .= " AND enemyTeamElo= ? \n";
             array_push($params, $this->enemySR);
+        }
+        if ($this->map) {
+            $sql .= " AND map= ? \n";
+            array_push($params, $this->map);
         }
         
         $readGame = $this->pdo->prepare($sql);
@@ -121,6 +127,10 @@ class Game extends Resource {
             if ($this->enemySR) {
                 $sql .= " enemyTeamElo= ? ,";
                 array_push($params, $this->enemySR);
+            }
+            if ($this->map) {
+                $sql .= " map= ? ,";
+                array_push($params, $this->map);
             }
             
             // Strip the last comma from the query
