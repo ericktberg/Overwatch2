@@ -76,9 +76,10 @@ OVERWATCH.input = (function() {
     $(document).ready(function () {
         // Create game submission will create a game, load it into view, and close menus associated with game selection
         $("#CreateGameMenu > form").submit(CreateGame);
+        $("#SelectGameMenu form").submit(LoadGames);
         
         // The buttons for selecting a game will load it into menu
-        $(".select-game").click(LoadGame);
+        $(".select-game").click(getGame);
         
         // Initialize the hero select menu
         heroSelect = OVERWATCH.radialQuadrantMenu.create;
@@ -87,6 +88,8 @@ OVERWATCH.input = (function() {
                         OVERWATCH.heroes.defense, 
                         OVERWATCH.heroes.support, 
                         OVERWATCH.heroes.tank);
+                        
+        
                         
        
     });
@@ -211,9 +214,10 @@ OVERWATCH.input = (function() {
 
         var url = "index.php";
         var formData = $(this).serializeArray();
-        console.log(formData);
+        
         console.log("Creating Game");
         
+        formData.push({name: 'player', value: OVERWATCH.user.get()});
         formData.push({name: 'resource', value: 'game'});
         
         $.ajax({
@@ -222,7 +226,9 @@ OVERWATCH.input = (function() {
             data: formData
         }).done(function(response) {
             // Check for success +
-            var map = JSON.parse(response)['map'];
+            console.log(JSON.parse(response));
+            
+            var map = JSON.parse(response)[0]['map'];
             if (map) {
                 // Set params
                 OVERWATCH.maps.setMap(map);
@@ -232,9 +238,7 @@ OVERWATCH.input = (function() {
 
                 OVERWATCH.index.CreateGameMenu.close();
                 OVERWATCH.index.ContextWindow.close('left');
-            }
-            
-            
+            }         
         });
     }
 
@@ -246,15 +250,66 @@ OVERWATCH.input = (function() {
      * 
      * @returns {undefined}
      */
-    function LoadGame() {        
-        console.log("Game Loaded");
-
+    function getGame() {        
+        console.log($(this).attr('name') + " Loaded");
+        OVERWATCH.maps.setMap($(this).attr('name'))
+        
         var svg = d3.select("#MainViz");
 
-        OVERWATCH.maps.draw(svg);
+        drawViz();
     }
     
+    /* Load all games that fit into the current filter into the selection menu
+     * Remove any extra 
+     * 
+     * @param {type} e
+     * @returns {undefined}
+     */
+    function LoadGames(e) {
+        e.preventDefault();
+        
+        
+        var url = "index.php";
+        var formData = $(this).serializeArray();
+        
+        formData.push({name: 'player', value: OVERWATCH.user.get()});
+        formData.push({name: 'resource', value: 'game'});
+        
+        console.log(formData);
+        
+        $.ajax({
+            type: 'GET',
+            url: url,
+            data: formData
+        }).done(function(response) {
+            if(response) {
+                console.log(response);
+                // Clear out previously loaded games
+                 $("#SelectGameMenu .select-item:not(.contextual").remove();
+                
+                // Create a button inside a list element that contains game information
+                $.each(JSON.parse(response), function(i, val) {
+                    if (val.map) {
+                        var li = $('<li></li>')
+                                .addClass('select-item')
+                                .appendTo('#SelectGameMenu .select-items');
+                        var button = $('<button></button')
+                                .addClass('select-game')
+                                .addClass(val.map)
+                                .attr('data-gameid', val.gameID)
+                                .attr('name', val.map)
+                                .appendTo(li);
+                        button.click(getGame);
+                    }
+                    
+                });
+            }
+        });
+    }
     
+    function LoadGameData() {
+        
+    }
     
     
     /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 

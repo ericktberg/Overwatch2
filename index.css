@@ -90,6 +90,12 @@ form {
 
 .form-item > input, .form-item > select {
     width: 90%;
+    margin: 5px 5px;
+}
+
+.form-item.range > input, .form-item.range > select {
+    width: 40%;
+    
 }
 
 button {
@@ -122,7 +128,7 @@ button:active {
     background-color: steelblue;
 }
 
-.hanamura {
+.Hanamura {
     background-image: url(images/HanamuraThumb.png);
 }
 

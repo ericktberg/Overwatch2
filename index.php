@@ -12,6 +12,9 @@ $method = filter_input(INPUT_SERVER, 'REQUEST_METHOD');
 
 /* Grab the http request information */
 $resource = filter_input(INPUT_POST, 'resource');
+if (!$resource) {
+    $resource = filter_input(INPUT_GET, 'resource');
+}
 
 /* Check media type, send error if not json */
 
@@ -32,7 +35,7 @@ switch ($resource) {
 }
 
 /* Select the method to run based on httpRequest param */
-$response;
+$response = array();
 switch ($method) {
     case 'POST':
         $response = $PDO->create();

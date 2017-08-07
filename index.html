@@ -62,30 +62,35 @@ and open the template in the editor.
                                 <!--TODO: make this a selection! use ranges rather than values-->
                                 <form method="get">
                                     <ul class="form-items">
-                                        <li class="form-item">
-                                            Player: 
-                                            <input type="text" name="player" required> 
+                                        <li class="form-item range">
+                                            Date<br>
+                                            <input class="datepicker" type="text" name="startDate" placeholder="Start Date">
+                                            <input class="datepicker" type="text" name="endDate" placeholder="End Date">
                                         </li>
                                         <li class="form-item">
-                                            Date: <input class="datepicker" type="text" name="date">
-                                        </li>
-                                        <li class="form-item">
-                                            Map: <select name="map">
-                                                <option value="All">All</option>
+                                            Map<br>
+                                            <select name="map">
+                                                <option value="All">All Maps</option>
                                                 <option value="Hanamura">Hanamura</option>
                                             </select>
                                         </li>
-                                        <li class="form-item">
-                                            Player SR: <input type="number" name="playerSR" min="1" max="5000">
+                                        <li class="form-item range">
+                                            Player SR<br>
+                                            <input type="number" name="minPlayerSR" min="1" max="5000" placeholder="min">
+                                            <input type="number" name="maxPlayerSR" min="1" max="5000" placeholder="max">
+                                        </li>
+                                        <li class="form-item range">
+                                            Team SR<br>
+                                            <input type="number" name="minTeamSR" min="1" max="5000" placeholder="min">
+                                            <input type="number" name="maxTeamSR" min="1" max="5000" placeholder="max">
+                                        </li>
+                                        <li class="form-item range">
+                                            Enemy Team SR<br>
+                                            <input type="number" name="minEnemySR" min="1" max="5000" placeholder="min">
+                                            <input type="number" name="maxEnemySR" min="1" max="5000" placeholder="max">
                                         </li>
                                         <li class="form-item">
-                                            Team SR: <input type="number" name="teamSR" min="1" max="5000">
-                                        </li>
-                                        <li class="form-item">
-                                            Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000">
-                                        </li>
-                                        <li class="form-item">
-                                            Video Url: <input type="text" name="videoURL">
+                                            Video Url<br><input type="text" name="videoURL">
                                         </li>
                                         <li class="form-item">
                                             <button>Find Games</button>
@@ -104,9 +109,6 @@ and open the template in the editor.
                                     <li class="select-item contextual context-input">
                                         <button onclick="OVERWATCH.index.CreateGameMenu.open()">+</button>
                                     </li>
-                                    <li class="select-item">
-                                        <button class="select-game hanamura" data-gameid="1"></button>
-                                    </li>
                                 </ul>
                             </li>
                         </ul>
@@ -114,10 +116,6 @@ and open the template in the editor.
                         <div id="CreateGameMenu" class="contextual side-menu context-input">
                             <form method="post">
                                 <ul class="form-items">
-                                    <li class="form-item">
-                                        Player: 
-                                        <input type="text" name="player" required> *
-                                    </li>
                                     <li class="form-item">
                                         Date: <br><input class="datepicker" type="text" name="date" required> *
                                     </li>

@@ -61,7 +61,7 @@ class Game extends Resource {
             $sql .= " AND enemyTeamElo= ? \n";
             array_push($params, $this->enemySR);
         }
-        if ($this->map) {
+        if ($this->map && $this->map != "All") {
             $sql .= " AND map= ? \n";
             array_push($params, $this->map);
         }
@@ -69,7 +69,13 @@ class Game extends Resource {
         $readGame = $this->pdo->prepare($sql);
         $readGame->execute($params);
         
-       return $readGame->fetch();        
+        /* Return the entire result set on reads */
+        $rows = array();
+        while($r = $readGame->fetch()) {
+            $rows[] = $r;
+        }
+        
+        return $rows;        
     }
     
     /* Create a game given the primary key information. Return the gameID of the game with these criteria

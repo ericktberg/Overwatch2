@@ -237,5 +237,14 @@ OVERWATCH.heroes = (function() {
         'support': list.filter(function(d) {
             return d.class === "support";
         })
-    }
+    };
+})();
+
+OVERWATCH.user = (function() {
+    
+    return {
+        'get': function() {
+            return 'Dan';
+        }
+    };
 })();
