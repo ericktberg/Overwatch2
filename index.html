@@ -63,34 +63,35 @@ and open the template in the editor.
                                 <form method="get">
                                     <ul class="form-items">
                                         <li class="form-item range">
-                                            Date<br>
+                                            <h4>Date</h4>
                                             <input class="datepicker" type="text" name="startDate" placeholder="Start Date">
                                             <input class="datepicker" type="text" name="endDate" placeholder="End Date">
                                         </li>
                                         <li class="form-item">
-                                            Map<br>
+                                            <h4>Map</h4>
                                             <select name="map" multiple>
                                                 <option value="All">No filter</option>
                                                 <option value="Hanamura">Hanamura</option>
                                             </select>
                                         </li>
                                         <li class="form-item range">
-                                            Player SR<br>
+                                            <h4>Player SR</h4>
                                             <input type="number" name="minPlayerSR" min="1" max="5000" placeholder="min">
                                             <input type="number" name="maxPlayerSR" min="1" max="5000" placeholder="max">
                                         </li>
                                         <li class="form-item range">
-                                            Team SR<br>
+                                            <h4>Team SR</h4>
                                             <input type="number" name="minTeamSR" min="1" max="5000" placeholder="min">
                                             <input type="number" name="maxTeamSR" min="1" max="5000" placeholder="max">
                                         </li>
                                         <li class="form-item range">
-                                            Enemy Team SR<br>
+                                            <h4>Enemy Team SR</h4>
                                             <input type="number" name="minEnemySR" min="1" max="5000" placeholder="min">
                                             <input type="number" name="maxEnemySR" min="1" max="5000" placeholder="max">
                                         </li>
                                         <li class="form-item">
-                                            Video Url<br><input type="text" name="videoURL">
+                                            <h4>Video Url</h4>
+                                            <input type="text" name="videoURL">
                                         </li>
                                         <li class="form-item">
                                             <button>Find Games</button>
@@ -150,30 +151,36 @@ and open the template in the editor.
                                 <ul class="form-items">
                                     <li class="form-item">
                                         <h4>Player Hero</h4>
-                                        <select name="playerHero" required>
+                                        <select name="playerHero" class="populate hero" required>
                                         </select>
                                     </li>
                                     <li class="form-item">
                                         <h4>Enemy Hero</h4>
-                                        <select name="enemyHero" required>
+                                        <select name="enemyHero" class="populate hero" required>
                                         </select>
                                     </li>
                                     <li class="form-item">
                                         <h4>Interaction Type</h4>
-                                        <input type="radio" name="mode"> Elimination
-                                        <input type="radio" name="mode"> Death
-                                        <input type="radio" name="mode"> Assist
+                                        <input type="radio" name="mode" value="Elimination" class="populate" required> Elimination
+                                        <input type="radio" name="mode" value="Death" class="populate" required> Death
+                                        <input type="radio" name="mode" value="Assist" class="populate" required> Assist
                                     </li>
                                     <li class="form-item">
                                         <h4>Side</h4>
-                                        <input type="radio" name="side"> Attack
-                                        <input type="radio" name="side"> Defense
-                                        <input type="radio" name="side"> King of the Hill
+                                        <input type="radio" name="side" value="Attack" required> Attack
+                                        <input type="radio" name="side" value="Defense" required> Defense
+                                        <input type="radio" name="side" value="KOTH" required> King of the Hill
                                     </li>
                                     <li class="form-item">
                                         <h4>Method</h4>
-                                        <select name="method" required>
+                                        <select name="method" class="populated method" required>
                                         </select>
+                                    </li>
+                                    <li class="form-item">
+                                        <button class="submit">Save Data</button>
+                                    </li>
+                                    <li class="form-item">
+                                        <button class="cancel" type="button" onclick="OVERWATCH.index.CreateGameDataMenu.close()">Cancel</button>
                                     </li>
                                 </ul>
                             </form>

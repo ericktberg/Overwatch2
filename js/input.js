@@ -73,10 +73,34 @@ OVERWATCH.input = (function() {
     var transformX = null, 
         transformY = null;
         
+    var currentGameID = null;
+        
     $(document).ready(function () {
+        // Populate the hero selection lists with heroes
+        $.each(OVERWATCH.heroes.list, function(i, val) {
+            $("#CreateGameDataMenu .populate.hero").append($('<option>', {
+                value: val.name,
+                text: val.name
+            }));
+        });
+        
+        $("#CreateGameDataMenu .populate").change(methodChange);
+        
+        
         // Create game submission will create a game, load it into view, and close menus associated with game selection
         $("#CreateGameMenu > form").submit(CreateGame);
+        $("#CreateGameDataMenu form").submit(CreateGameData);
         $("#SelectGameMenu form").submit(LoadGames);
+        
+        // Cancel button removes the last created data
+        $("#CreateGameDataMenu .cancel").click(function() {
+           if (lastCircle) {
+               lastCircle.remove();
+           } 
+           if (lastRect) {
+               lastRect.remove();
+           }
+        });
         
         // The buttons for selecting a game will load it into menu
         $(".select-game").click(getGame);
@@ -88,10 +112,6 @@ OVERWATCH.input = (function() {
                         OVERWATCH.heroes.defense, 
                         OVERWATCH.heroes.support, 
                         OVERWATCH.heroes.tank);
-                        
-        
-                        
-       
     });
     
     /* Cleanup the input function. 
@@ -106,6 +126,40 @@ OVERWATCH.input = (function() {
     }
     
    
+    function methodChange() {
+            // Clear previous options
+            $("#CreateGameDataMenu .populated.method").empty();
+            
+            // Get value of interaction type (mode)
+            var mode = $("input[name=mode]:checked", '#CreateGameDataMenu form').val();
+            // Get hero name based on value of mode.
+            var selector = (mode === 'Death' ? 'enemyHero' : 'playerHero');
+            var name =  $("#CreateGameDataMenu select[name=" + selector + "]")
+                    .find(":selected").text();
+            
+            // Grab the methods array
+            // TODO: factor this out to OVERWATCH.heroes
+            var methods = ['Melee'];
+            OVERWATCH.heroes.list.map(function(hero) {
+                if (hero.name === name) {
+                    var test = ['lmb', 'rmb', 'ability1', 'ability2', 'ult'];
+                    
+                    test.map(function(val) {
+                        if (hero[val]) {
+                            methods.push(hero[val]);
+                        }
+                    });
+                }
+            });
+            
+            // Populate the select with methods options
+            $.each(methods, function(i, val) {
+                $("#CreateGameDataMenu .populated.method").append($('<option>', {
+                    value: val,
+                    text: val
+                }));
+            });
+        }
     
     /* Determine what the next click will produce based on the previous shape created and validated
      * 
@@ -123,7 +177,7 @@ OVERWATCH.input = (function() {
             newObject = container.append("circle")
                     .attr("r", 7.5)
                     .attr("transform", "translate(" + transformX + "," + transformY + ")");
-            
+            lastCircle = newObject;
             // Assign the player hero in form
             console.log("Created Circle");
         }
@@ -138,7 +192,7 @@ OVERWATCH.input = (function() {
                     .attr("height", 10)
                     .attr("width", 10)
                     .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
-            
+            lastRect = newObject;
             // Assign the enemy hero in form
             console.log("Created Rectangle");
         }
@@ -193,12 +247,16 @@ OVERWATCH.input = (function() {
                 if (lastClick === 'rect') {
                     OVERWATCH.index.ContextWindow.open('left');
                     $("#CreateGameDataMenu").addClass('is-open');
+                    
+                    // Set enemy hero
+                    $("#CreateGameDataMenu select[name=enemyHero]").val($(this).attr("name"));
                 }
+                else if (lastClick === 'circle') {
+                    $("#CreateGameDataMenu select[name=playerHero]").val($(this).attr("name"));
+                }
+                methodChange();
             });
         }
-        
-        
-        
     }
     
     /* Remove any existing svg elements and draw
@@ -237,9 +295,10 @@ OVERWATCH.input = (function() {
             data: formData
         }).done(function(response) {
             // Check for success +
-            console.log(JSON.parse(response));
-            
-            var map = JSON.parse(response)[0]['map'];
+            console.log(JSON.parse(response)[0]);
+            response = JSON.parse(response)[0];
+            var map = response['map'];
+            currentGameID = response['gameID'];
             if (map) {
                 // Set params
                 OVERWATCH.maps.setMap(map);
@@ -263,6 +322,9 @@ OVERWATCH.input = (function() {
      */
     function getGame() {        
         console.log($(this).attr('name') + " Loaded");
+        
+        currentGameID = $(this).attr('data-gameid');
+        
         OVERWATCH.maps.setMap($(this).attr('name'));
         
         var svg = d3.select("#MainViz");
@@ -271,7 +333,9 @@ OVERWATCH.input = (function() {
     }
     
     /* Load all games that fit into the current filter into the selection menu
-     * Remove any extra 
+     * Remove the previous selection
+     * 
+     * TODO: Do I need to go to the database for every filter?
      * 
      * @param {type} e
      * @returns {undefined}
@@ -328,8 +392,48 @@ OVERWATCH.input = (function() {
         
     }
     
+    /* Submit the input form for the pair
+     * 
+     *  1. Check for requirements
+     *  2. Gather any extra data from the map (e.g. transform data)
+     *  3. Send ajax to php file
+     *  4. Lock down the data that we just submitted
+     *  
+     *  
+     *  gameID is a foreign key in the schema for this table
+     *  
+     */
     function CreateGameData() {
+        var playerPos,
+            enemyPos,
+            positionData;
         
+        console.log(lastCircle.attr('transform'));
+        
+        console.log("Creating game data");
+        e.preventDefault();
+
+        var url = "php/index.php";
+       
+        
+        positionData = [{name: 'gameID', value: currentGameID},
+                            {name: 'playerX', value: playerPos.x},
+                            {name: 'playerY', value: playerPos.y},
+                            {name: 'playerZ', value: playerPos.z},
+                            {name: 'enemyX', value: enemyPos.x},
+                            {name: 'enemyY', value: enemyPos.y},
+                            {name: 'enemyZ', value: enemyPos.z}];
+        var formData = $(this).serializeArray().concat(positionData);
+        formData.push({'name': 'resource', 'value': 'gamedata'});
+        /*
+        $.ajax({
+            type: "POST",
+            url: url,
+            data: formData
+        }).done(function(response) {
+            
+        });
+        */
     }
     
     
@@ -388,61 +492,3 @@ OVERWATCH.input = (function() {
 
 
 
-    /* Submit the input form for the pair
-     * 
-     *  1. Check for requirements
-     *  2. Gather any extra data from the map (e.g. transform data)
-     *  3. Send ajax to php file
-     *  4. Fix the data editing capabilities
-     *  
-     *  The saveGame functions are defined as expressions
-     *  This is to allow the lastID to be passed from one handler to the other.
-     *  the returned gameID from the php file saveGame.php is required for saveGameData
-     *  
-     *  gameID is a foreign key in the schema for this table
-     *  
-     *  Also, 
-     */
-    var saveGameData = function (e) {
-        console.log(saveGameData.lastID);
-        if (saveGameData.lastID) {
-            var url = "index.php";
-            var playerPos,
-                enemyPos;
-            var positionData;
-            
-            
-            
-            playerPos = quadrantCoords({x: clicked.lastCircle.attr('posX'), y: clicked.lastCircle.attr('posY')});
-            enemyPos = quadrantCoords({x: clicked.lastRect.attr('posX'), y: clicked.lastRect.attr('posY')});
-
-            positionData = [{name: 'gameID', value: saveGameData.lastID},
-                            {name: 'playerX', value: playerPos.x},
-                            {name: 'playerY', value: playerPos.y},
-                            {name: 'playerZ', value: playerPos.z},
-                            {name: 'enemyX', value: enemyPos.x},
-                            {name: 'enemyY', value: enemyPos.y},
-                            {name: 'enemyZ', value: enemyPos.z}];            
-            var formData = $(this).serializeArray().concat(positionData);
-            formData.push({name: 'resource', value: 'gamedata'});
-            
-            
-            $.ajax({
-                type: "POST",
-                url: url,
-                data: formData
-            }).done(function(response) { 
-                console.log(response); 
-            });
-
-            // Once the form is submitted, the values are set in stone. 
-            // "Undoing" will delete the two previous, not allow modification
-            fixElement(clicked.lastCircle);
-            fixElement(clicked.lastRect);
-
-            // Close the form
-            closeModal('#inputForm');
-            clicked.formOpen = false;            
-        }
-        e.preventDefault(); 
-    };

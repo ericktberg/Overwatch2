@@ -10,12 +10,10 @@
 
 /* global d3 */
 
-var OVERWATCH = {}
+var OVERWATCH = {};
 
 OVERWATCH.index = (function() {
     var INFO = false;
-
-    
 
     /*  When window loads, display default content
      *  Set behaviors and fill-in data for DOM elements
@@ -42,25 +40,38 @@ OVERWATCH.index = (function() {
         OVERWATCH.state.render(url);
     });
 
+    var CreateGameMenu = {
+        open: function() { $('#CreateGameMenu').addClass('is-open'); ContextWindow.open('left'); },
+        close: function() { $('#CreateGameMenu').removeClass('is-open'); }
+    };
+    
+    var ContextWindow = {
+        open: function(side) { 
+            $('#PrimaryNav > nav, .side-menu.' + side).addClass('is-open'); 
+        },
+        close: function(side) { 
+            $('#PrimaryNav > nav, .side-menu.' + side).removeClass('is-open'); 
+        },
+        toggle: function (side) {
+            $('#PrimaryNav > nav, .side-menu.' + side).toggleClass('is-open');
+        }
+    };
+    
+    var newMenu = function(selector) {
+        return {
+            open: function() { $(selector).addClass('is-open'); },
+            close: function() {$(selector).removeClass('is-open'); }
+        };
+    }
+
     // Public members of OVERWATCH.index
     return {
         
-        CreateGameMenu: {
-            open: function() { $('#CreateGameMenu').addClass('is-open'); },
-            close: function() { $('#CreateGameMenu').removeClass('is-open'); }
-        },
+        'CreateGameMenu': CreateGameMenu,
         
-        ContextWindow: {
-            open: function(side) { 
-                $('#PrimaryNav > nav, .side-menu.' + side).addClass('is-open'); 
-            },
-            close: function(side) { 
-                $('#PrimaryNav > nav, .side-menu.' + side).removeClass('is-open'); 
-            },
-            toggle: function (side) {
-                $('#PrimaryNav > nav, .side-menu.' + side).toggleClass('is-open');
-            }
-        }
+        'ContextWindow': ContextWindow,
+        
+        'CreateGameDataMenu': newMenu('#CreateGameDataMenu')
 
     };
 })();
@@ -110,7 +121,7 @@ OVERWATCH.point = (function() {
             OVERWATCH.index.ContextWindow.open('left');
             $('.context-point').addClass('is-active');
         }
-    }
+    };
 })();
 
 OVERWATCH.hex = (function() {
@@ -119,7 +130,7 @@ OVERWATCH.hex = (function() {
             OVERWATCH.index.ContextWindow.open('left');
             $('.context-hex').addClass('is-active');
         }
-    }
+    };
 })();
 
 

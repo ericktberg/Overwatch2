@@ -1,6 +1,18 @@
 /* global OVERWATCH*/
 
 
+OVERWATCH.menu = (function() {
+    return {
+        'new': function(selector) {
+            return {
+                open: function() { $(selector).addClass('is-open'); },
+                close: function() {$(selector).removeClass('is-open'); }
+            };
+        }
+    };
+})();
+
+
 /* A radial Quadrant menu has 4 quadrants, each with their own radial pattern
  * 
  * Useful for selections
