@@ -15,11 +15,11 @@ and open the template in the editor.
         <script type="text/javascript" src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
         
-        <link rel="stylesheet" href="heroes.css">
-        <link rel="stylesheet" href="menu.css">
-        <link rel="stylesheet" href="index.css">
+        <link rel="stylesheet" href="css/heroes.css">
+        <link rel="stylesheet" href="css/menu.css">
+        <link rel="stylesheet" href="css/index.css">
         <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-        <link rel="stylesheet" href="globalnav.css">
+        <link rel="stylesheet" href="css/globalnav.css">
     <body>
         <div class="site-wrapper">
             <div class="nav-wrapper">
@@ -69,8 +69,8 @@ and open the template in the editor.
                                         </li>
                                         <li class="form-item">
                                             Map<br>
-                                            <select name="map">
-                                                <option value="All">All Maps</option>
+                                            <select name="map" multiple>
+                                                <option value="All">No filter</option>
                                                 <option value="Hanamura">Hanamura</option>
                                             </select>
                                         </li>
@@ -117,30 +117,63 @@ and open the template in the editor.
                             <form method="post">
                                 <ul class="form-items">
                                     <li class="form-item">
-                                        Date: <br><input class="datepicker" type="text" name="date" required> *
+                                        <h4>Date</h4><input class="datepicker" type="text" name="date" placeholder="Date game was played" required> *
                                     </li>
                                     <li class="form-item">
-                                        Map: <br><select name="map" required>
+                                        <h4>Map</h4><select name="map" required>
                                             <option value="Hanamura">Hanamura</option>
                                         </select> *
                                     </li>
                                     <li class="form-item">
-                                        Player SR: <input type="number" name="playerSR" min="1" max="5000" required> *
+                                        <h4>Player SR</h4><input type="number" name="playerSR" min="1" max="5000" placeholder="1-5000" required> *
                                     </li>
                                     <li class="form-item">
-                                        Team SR: <input type="number" name="teamSR" min="1" max="5000" required> *
+                                        <h4>Team SR</h4><input type="number" name="teamSR" min="1" max="5000" placeholder="1-5000" required> *
                                     </li>
                                     <li class="form-item">
-                                        Enemy Team SR: <input type="number" name="enemySR" min="1" max="5000" required> *
+                                        <h4>Enemy Team SR</h4><input type="number" name="enemySR" min="1" max="5000" placeholder="1-5000" required> *
                                     </li>
                                     <li class="form-item">
-                                        Video Url: <input type="text" name="videoURL">
+                                        <h4>Video Url</h4><input type="text" name="videoURL" placeholder="file, youtube, or twitch url">
                                     </li>
                                     <li class="form-item">
                                         <button class="submit">Create Game</button>
                                     </li>
                                     <li class="form-item">
                                         <button type="button" onclick="OVERWATCH.index.CreateGameMenu.close()">Cancel</button>
+                                    </li>
+                                </ul>
+                            </form>
+                        </div>
+                        <div id="CreateGameDataMenu" class="contextual side-menu context-input">
+                            <form method="post">
+                                <ul class="form-items">
+                                    <li class="form-item">
+                                        <h4>Player Hero</h4>
+                                        <select name="playerHero" required>
+                                        </select>
+                                    </li>
+                                    <li class="form-item">
+                                        <h4>Enemy Hero</h4>
+                                        <select name="enemyHero" required>
+                                        </select>
+                                    </li>
+                                    <li class="form-item">
+                                        <h4>Interaction Type</h4>
+                                        <input type="radio" name="mode"> Elimination
+                                        <input type="radio" name="mode"> Death
+                                        <input type="radio" name="mode"> Assist
+                                    </li>
+                                    <li class="form-item">
+                                        <h4>Side</h4>
+                                        <input type="radio" name="side"> Attack
+                                        <input type="radio" name="side"> Defense
+                                        <input type="radio" name="side"> King of the Hill
+                                    </li>
+                                    <li class="form-item">
+                                        <h4>Method</h4>
+                                        <select name="method" required>
+                                        </select>
                                     </li>
                                 </ul>
                             </form>
@@ -164,8 +197,8 @@ and open the template in the editor.
         </div>
         
     
-    <script type="text/javascript" src="index.js"></script>
-    <script type="text/javascript" src="input.js"></script>
-    <script type="text/javascript" src="menu.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/input.js"></script>
+    <script type="text/javascript" src="js/menu.js"></script>
     </body>
 </html>

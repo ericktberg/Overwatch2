@@ -109,7 +109,6 @@ OVERWATCH.point = (function() {
         view: function() {
             OVERWATCH.index.ContextWindow.open('left');
             $('.context-point').addClass('is-active');
-            OVERWATCH.modal.open('HeroSelect');
         }
     }
 })();

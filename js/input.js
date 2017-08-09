@@ -173,20 +173,31 @@ OVERWATCH.input = (function() {
         transformY = mouse.layerY;
     
         console.log("Container clicked");
-        
-        if (transform) {
-            transform = getTransformation(transform);
-            // Transform data to have 1:1 correspondence with svg
-            transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
-            transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
+        // If the data creation menu is open, that means there is unresolved data at the moment 
+        // Do not create more
+        if (!$("#CreateGameDataMenu").hasClass('is-open')) {
+            if (transform) {
+                transform = getTransformation(transform);
+                // Transform data to have 1:1 correspondence with svg
+                transformX = Math.round(mouse.layerX/transform.scaleX - (transform ? transform.translateX/transform.scaleX : 0));
+                transformY = Math.round(mouse.layerY/transform.scaleY - (transform ? transform.translateY/transform.scaleY : 0));
+            }
+
+            heroSelect.moveTo(transformX, transformY);
+            OVERWATCH.modal.open('HeroSelect');
+
+            $('#HeroSelect .select-item').unbind("click").click(function() {
+                createSprite(transformX, transformY, $(this).attr("name"));
+                
+                // Open up the gameDataCreation menu if the click created a rectangle.
+                if (lastClick === 'rect') {
+                    OVERWATCH.index.ContextWindow.open('left');
+                    $("#CreateGameDataMenu").addClass('is-open');
+                }
+            });
         }
         
-        heroSelect.moveTo(transformX, transformY);
-        OVERWATCH.modal.open('HeroSelect');
         
-        $('#HeroSelect .select-item').unbind("click").click(function() {
-            createSprite(transformX, transformY, $(this).attr("name"));
-        });
         
     }
     
@@ -212,7 +223,7 @@ OVERWATCH.input = (function() {
     function CreateGame(e) {
         e.preventDefault();
 
-        var url = "index.php";
+        var url = "php/index.php";
         var formData = $(this).serializeArray();
         
         console.log("Creating Game");
@@ -252,7 +263,7 @@ OVERWATCH.input = (function() {
      */
     function getGame() {        
         console.log($(this).attr('name') + " Loaded");
-        OVERWATCH.maps.setMap($(this).attr('name'))
+        OVERWATCH.maps.setMap($(this).attr('name'));
         
         var svg = d3.select("#MainViz");
 
@@ -269,7 +280,7 @@ OVERWATCH.input = (function() {
         e.preventDefault();
         
         
-        var url = "index.php";
+        var url = "php/index.php";
         var formData = $(this).serializeArray();
         
         formData.push({name: 'player', value: OVERWATCH.user.get()});
@@ -285,20 +296,26 @@ OVERWATCH.input = (function() {
             if(response) {
                 console.log(response);
                 // Clear out previously loaded games
+                // Be careful not to delete the create game button
                  $("#SelectGameMenu .select-item:not(.contextual").remove();
                 
                 // Create a button inside a list element that contains game information
                 $.each(JSON.parse(response), function(i, val) {
                     if (val.map) {
+                        // Add the button container
                         var li = $('<li></li>')
                                 .addClass('select-item')
                                 .appendTo('#SelectGameMenu .select-items');
+                        // The button contains data that will be used on click
                         var button = $('<button></button')
                                 .addClass('select-game')
                                 .addClass(val.map)
                                 .attr('data-gameid', val.gameID)
                                 .attr('name', val.map)
                                 .appendTo(li);
+                        // Button contents will change on hover to give more information
+                        
+                        // Get the game into canvas on click
                         button.click(getGame);
                     }
                     
@@ -308,6 +325,10 @@ OVERWATCH.input = (function() {
     }
     
     function LoadGameData() {
+        
+    }
+    
+    function CreateGameData() {
         
     }
     
