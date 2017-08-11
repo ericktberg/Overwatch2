@@ -156,9 +156,9 @@ class GameData extends Resource {
         $readData = $this->pdo->prepare($sql);
 
         $readData->execute($params);
-
-        // TODO: don't read again, jfc.
-        return $readData->fetch();
+        
+        // Return all rows from dataset
+        return $this->rows($readData);
     }
     
     public function update() {

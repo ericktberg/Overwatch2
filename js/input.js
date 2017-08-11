@@ -125,7 +125,10 @@ OVERWATCH.input = (function() {
         $("#MainViz").empty();
     }
     
-   
+   /* Populate the method dropdown with new data based on data already in the form
+    * 
+    * @returns {undefined}
+    */
     function methodChange() {
             // Clear previous options
             $("#CreateGameDataMenu .populated.method").empty();
@@ -161,6 +164,23 @@ OVERWATCH.input = (function() {
             });
         }
     
+    function createPlayer(hero, x, y) {
+        return container.append("circle")
+                .attr("r", 7.5)
+                .attr("transform", "translate(" + x + "," + y + ")")
+                .attr("class", hero)
+                .on("contextmenu", function() { d3.event.preventDefault(); });  ;
+    }
+    
+    function createEnemy(hero, x, y) {
+        return container.append("rect")    
+                .attr("height", 10)
+                .attr("width", 10)
+                .attr("transform", "translate(" + (x-5) + "," + (y-5) + ")")
+                .attr("class", hero)
+                .on("contextmenu", function() { d3.event.preventDefault(); });;
+    }
+    
     /* Determine what the next click will produce based on the previous shape created and validated
      * 
      * @param {type} transformX
@@ -174,9 +194,7 @@ OVERWATCH.input = (function() {
             // This is either the first element created, or the previous element was the enemy
             // Either way, create a player icon.
             lastClick = 'circle';
-            newObject = container.append("circle")
-                    .attr("r", 7.5)
-                    .attr("transform", "translate(" + transformX + "," + transformY + ")");
+            newObject = createPlayer(hero, transformX, transformY);
             lastCircle = newObject;
             // Assign the player hero in form
             console.log("Created Circle");
@@ -188,10 +206,7 @@ OVERWATCH.input = (function() {
             * Rectangles are created on the top left corner. Transform the rectangle to appear at the center of the click.
             */
             lastClick = 'rect';
-            newObject = container.append("rect")    
-                    .attr("height", 10)
-                    .attr("width", 10)
-                    .attr("transform", "translate(" + (transformX-5) + "," + (transformY-5) + ")");
+            newObject = createEnemy(hero, transformX, transformY);
             lastRect = newObject;
             // Assign the enemy hero in form
             console.log("Created Rectangle");
@@ -202,12 +217,7 @@ OVERWATCH.input = (function() {
         function dragged() {
            d3.select(this).attr("transform", "translate(" + d3.event.x + "," + d3.event.y + ")");
         }
-        /* Assign the shared properties of the objects created
-         * 
-         */
-        newObject.call(d3.drag().on("drag", dragged))
-                .attr("class", hero)
-                .on("contextmenu", function() { d3.event.preventDefault(); });
+        newObject.call(d3.drag().on("drag", dragged));
         
         return newObject;
     }
@@ -249,6 +259,7 @@ OVERWATCH.input = (function() {
                     $("#CreateGameDataMenu").addClass('is-open');
                     
                     // Set enemy hero
+                    // TODO: these lastClicks are already referenced somewhere else. It might be possible to aggregate
                     $("#CreateGameDataMenu select[name=enemyHero]").val($(this).attr("name"));
                 }
                 else if (lastClick === 'circle') {
@@ -324,10 +335,11 @@ OVERWATCH.input = (function() {
         console.log($(this).attr('name') + " Loaded");
         
         currentGameID = $(this).attr('data-gameid');
-        
         OVERWATCH.maps.setMap($(this).attr('name'));
         
         var svg = d3.select("#MainViz");
+        
+        LoadGameData();
 
         drawViz();
     }
@@ -389,7 +401,41 @@ OVERWATCH.input = (function() {
     }
     
     function LoadGameData() {
+        var url = "php/index.php";
         
+        $.ajax({
+            type: 'GET',
+            url: url,
+            data: [
+                {'name': 'resource', 'value': 'gamedata'},
+                {'name': 'gameID', 'value': currentGameID}
+            ]
+        }).done(function(response) {
+            var data = JSON.parse(response);
+            
+            $.each(data, function(i, val) {
+                var player = createPlayer(val.playerCharacter, val.playerX, val.playerY);
+                var enemy = createEnemy(val.enemyCharacter, val.enemyX, val.enemyY);
+                
+                var over = function() {
+                    enemy.attr("width", 15).attr("height", 15);
+                    player.attr("r", 10); 
+                };
+                
+                var out = function() {
+                    enemy.attr("width", 10).attr("height", 10);
+                    player.attr("r", 7.5);
+                };
+                
+                enemy.on("mouseover", over)
+                        .on("mouseout", out);
+                
+                player.on("mouseover", over)
+                        .on("mouseout", out);
+                
+                
+            });
+        });            
     }
     
     /* Submit the input form for the pair
@@ -403,43 +449,47 @@ OVERWATCH.input = (function() {
      *  gameID is a foreign key in the schema for this table
      *  
      */
-    function CreateGameData() {
-        var playerPos,
-            enemyPos,
-            positionData;
-        
-        console.log(lastCircle.attr('transform'));
+    function CreateGameData(e) {
+        // Get positional data from created elements
+        // TODO: check if they exist
+        var playerPos = getTransformation(lastCircle.attr('transform')),
+            enemyPos = getTransformation(lastRect.attr('transform'));
         
         console.log("Creating game data");
         e.preventDefault();
-
-        var url = "php/index.php";
-       
-        
+             
+        // Set data up for transfer
         positionData = [{name: 'gameID', value: currentGameID},
-                            {name: 'playerX', value: playerPos.x},
-                            {name: 'playerY', value: playerPos.y},
-                            {name: 'playerZ', value: playerPos.z},
-                            {name: 'enemyX', value: enemyPos.x},
-                            {name: 'enemyY', value: enemyPos.y},
-                            {name: 'enemyZ', value: enemyPos.z}];
+                            {name: 'playerX', value: playerPos.translateX},
+                            {name: 'playerY', value: playerPos.translateY},
+                            {name: 'playerZ', value: 1},
+                            {name: 'enemyX', value: enemyPos.translateX},
+                            {name: 'enemyY', value: enemyPos.translateY},
+                            {name: 'enemyZ', value: 1}];
         var formData = $(this).serializeArray().concat(positionData);
         formData.push({'name': 'resource', 'value': 'gamedata'});
-        /*
+        
+        // Make http request
+        var url = "php/index.php";
         $.ajax({
             type: "POST",
             url: url,
             data: formData
         }).done(function(response) {
+            console.log(response);
+            // Check for success and handle errors
             
+            // Close the menu for continued editing
+            OVERWATCH.index.CreateGameDataMenu.close();
         });
-        */
+        
     }
     
     
     /* http://stackoverflow.com/questions/38224875/replacing-d3-transform-in-d3-v4 
      * 
      * Take a d3 transform and return a legible javascript object
+     * Copy and pasted from the stackoverflow
      */
     function getTransformation(transform) {
         // Create a dummy g for calculation purposes only. This will never
@@ -474,6 +524,7 @@ OVERWATCH.input = (function() {
         };
     }
     
+    // Public functions for 
     return {
         /* Display the input view
         */

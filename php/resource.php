@@ -53,6 +53,16 @@ abstract class Resource {
     
     abstract public function delete();
     
+    protected function rows($set) {
+        /* Return the entire result set on reads */
+        $rows = array();
+        while($r = $set->fetch()) {
+            $rows[] = $r;
+        }
+        
+        return $rows;
+    }
+    
 
 }
 

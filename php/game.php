@@ -67,15 +67,9 @@ class Game extends Resource {
         }
         
         $readGame = $this->pdo->prepare($sql);
-        $readGame->execute($params);
+        $readGame->execute($params);        
         
-        /* Return the entire result set on reads */
-        $rows = array();
-        while($r = $readGame->fetch()) {
-            $rows[] = $r;
-        }
-        
-        return $rows;        
+        return $this->rows($readGame);        
     }
     
     /* Create a game given the primary key information. Return the gameID of the game with these criteria
