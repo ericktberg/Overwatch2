@@ -14,7 +14,7 @@ var OVERWATCH = {};
 
 OVERWATCH.index = (function() {
     var INFO = false;
-
+    var container = null;
     /*  When window loads, display default content
      *  Set behaviors and fill-in data for DOM elements
      *      TODO: DOM elements that are not being referenced can be filled in when they become relevant
@@ -24,6 +24,8 @@ OVERWATCH.index = (function() {
     $(document).ready(function () {    
         // Setup all datepickers on load.
         $(".datepicker").datepicker();
+        
+        $("#SelectGameMenu form").submit(OVERWATCH.game.LoadGames());
         
         var url = decodeURI(window.location.hash);
         OVERWATCH.state.render(url);
@@ -66,6 +68,7 @@ OVERWATCH.index = (function() {
 
     // Public members of OVERWATCH.index
     return {
+        'container': null,
         
         'CreateGameMenu': CreateGameMenu,
         
@@ -86,9 +89,8 @@ OVERWATCH.state = (function() {
             
             // Remove active contexts
             $('.is-active').removeClass('is-active');
+            
             // Remove any data currently rendered
-
-            console.log(viewHandle.cleanup);
             if (viewHandle.cleanup) {
                 viewHandle.cleanup();
             }
@@ -110,19 +112,17 @@ OVERWATCH.state = (function() {
             else {
                 renderErrorPage();
             }
+        },
+        
+        loadGame: function() {
+            console.log(viewHandle.loadGame);
+            return viewHandle.loadGame;
         }
     };
 })();
 
 
-OVERWATCH.point = (function() {
-    return {
-        view: function() {
-            OVERWATCH.index.ContextWindow.open('left');
-            $('.context-point').addClass('is-active');
-        }
-    };
-})();
+
 
 OVERWATCH.hex = (function() {
     return {
@@ -132,10 +132,6 @@ OVERWATCH.hex = (function() {
         }
     };
 })();
-
-
-
-
 
 
 OVERWATCH.maps = (function() {
